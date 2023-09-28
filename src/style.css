@@ -1,0 +1,24 @@
+:root {
+  font-family: 'Hanken Grotesk', sans-serif;
+  --darkColor:#181818;
+  --lightColor:whitesmoke;
+  --accentColor:#0D0D35
+}
+*{
+  margin : 0;
+  padding : 0;
+  box-sizing: border-box;
+}
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
+body{
+  display: flex;
+  flex-direction: column;
+  background-color: var(--darkColor);
+  color: var(--lightColor);
+  min-height: 100vh;
+  max-height: 100vh;
+}
