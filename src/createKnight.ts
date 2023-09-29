@@ -29,16 +29,17 @@ function createKnight(scene: Phaser.Scene, x: number, y: number) {
         canDoubleJump: false,
         isJumping: false,
         didPressJump: false,
-        flipX : false
+        flipX: false,
+        pressedDown: false,
     }
 
     const animationStateMachine = createStateMachine('idle', {
         idle: {
-            from: ['falling', 'running', 'pivoting'],
+            from: ['falling', 'running', 'pivoting', 'crouching','crouch-walking','flipping'],
             to: 'idle'
         },
         run: {
-            from: ['falling', 'idle', 'pivoting'],
+            from: ['falling', 'idle', 'pivoting', 'crouching','crouch-walking'],
             to: 'running'
         },
         pivot: {
@@ -46,7 +47,7 @@ function createKnight(scene: Phaser.Scene, x: number, y: number) {
             to: 'pivoting'
         },
         jump: {
-            from: ['idle', 'running', 'pivoting'],
+            from: ['idle', 'running', 'pivoting', 'crouching','crouch-walking'],
             to: 'jumping'
         },
         flip: {
@@ -56,6 +57,14 @@ function createKnight(scene: Phaser.Scene, x: number, y: number) {
         fall: {
             from: '*',
             to: 'falling'
+        },
+        crouch: {
+            from: ['standing', 'falling', 'running', 'idle','crouch-walking'],
+            to: 'crouching'
+        },
+        crouchWalk : {
+            from: ['standing', 'falling', 'running', 'idle','crouching'],
+            to: 'crouch-walking'
         }
     }, {
         whenJump: () => {
@@ -76,13 +85,19 @@ function createKnight(scene: Phaser.Scene, x: number, y: number) {
         whenRun: () => {
             play('Run')
         },
+        whenCrouch: () => {
+            play('Crouch')
+        },
+        whenCrouchWalk : () => {
+            play('CrouchWalk')
+        }
     }, {
 
         isOnIdleState: () => {
-            return sprite.body.onFloor() && sprite.body.velocity.x === 0 && sprite.body.velocity.y === 0;
+            return sprite.body.onFloor() && sprite.body.velocity.x === 0 && sprite.body.velocity.y === 0 && !state.pressedDown;
         },
         isOnRunState: () => {
-            return sprite.body.onFloor() && Math.sign(sprite.body.velocity.x) === (state.flipX ? -1 : 1)
+            return sprite.body.onFloor() && Math.sign(sprite.body.velocity.x) === (state.flipX ? -1 : 1) && !state.pressedDown
         },
         isOnPivotState: () => {
             return sprite.body.onFloor() && Math.sign(sprite.body.velocity.x) === (state.flipX ? 1 : -1)
@@ -95,6 +110,12 @@ function createKnight(scene: Phaser.Scene, x: number, y: number) {
         },
         isOnFallState: () => {
             return sprite.body.velocity.y > 200
+        },
+        isOnCrouchState: () => {
+            return sprite.body.onFloor() && sprite.body.velocity.x === 0 && sprite.body.velocity.y === 0 && state.pressedDown;
+        },
+        isOnCrouchWalkState : () => {
+            return sprite.body.onFloor() && sprite.body.velocity.x !== 0 && sprite.body.velocity.y === 0 && state.pressedDown;
         }
     })
 
@@ -140,19 +161,30 @@ function createKnight(scene: Phaser.Scene, x: number, y: number) {
             return sprite.body.onFloor()
         },
     })
-    animationStateMachine.addListener('beforeStateChange',(from, to) => {
-        console.log('Animation change ',from,to)
+    animationStateMachine.addListener('beforeStateChange', (from, to) => {
+        console.log('Animation change ', from, to)
     })
 
     listenPreUpdate(sprite, () => {
         if (right.isDown) {
-            sprite.setAccelerationX(1000)
-            //sprite.setVelocityX(250);
+            if(down.isDown){
+                sprite.setAccelerationX(500)
+                sprite.setMaxVelocity(100,400);
+            }else{
+                sprite.setAccelerationX(1000);
+                sprite.setMaxVelocity(250,400);
+            }
             sprite.setOffset(53, 45);
             sprite.setFlipX(false);
             state.flipX = false;
         } else if (left.isDown) {
-            sprite.setAccelerationX(-1000)
+            if(down.isDown){
+                sprite.setAccelerationX(-500);
+                sprite.setMaxVelocity(100,400);
+            }else{
+                sprite.setAccelerationX(-1000)
+                sprite.setMaxVelocity(250,400);
+            }
             sprite.setFlipX(true);
             state.flipX = true;
             sprite.setOffset(58, 45);
@@ -160,6 +192,8 @@ function createKnight(scene: Phaser.Scene, x: number, y: number) {
             sprite.setAccelerationX(0);
         }
         state.didPressJump = Phaser.Input.Keyboard.JustDown(up);
+        state.pressedDown = down.isDown;
+
         if (movementStateMachine.is('jumping') || movementStateMachine.is('flipping')) {
             if (!up.isDown && sprite.body.velocity.y < -150) {
                 sprite.setVelocityY(-150);
@@ -173,8 +207,8 @@ function createKnight(scene: Phaser.Scene, x: number, y: number) {
                 break;
             }
         }
-        for(const t of animationStateMachine.getTransitions()){
-            if(animationStateMachine.isOn(t)){
+        for (const t of animationStateMachine.getTransitions()) {
+            if (animationStateMachine.isOn(t)) {
                 animationStateMachine.move(t);
             }
         }
