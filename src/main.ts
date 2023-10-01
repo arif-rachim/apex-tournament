@@ -1,7 +1,8 @@
 import './style.css'
 import Phaser from "phaser";
-import createKnight from "./createKnight";
+import {createKnight, staticPreLoad} from "./knight/createKnight";
 import {createPlatform} from "./createPlatform";
+
 
 const sizes = {
     width: 800,
@@ -19,13 +20,34 @@ class GameScene extends Phaser.Scene {
     }
 
     preload() {
-        createKnight.staticPreLoad(this)
+        staticPreLoad(this)
     }
 
     create() {
-        const knight = createKnight(this, 250, 250);
-        const platform = createPlatform(this,520,500,260,10,0x4BCB7C);
+        const knight = createKnight(this, 250, 250, {
+            right: Phaser.Input.Keyboard.KeyCodes.D,
+            left: Phaser.Input.Keyboard.KeyCodes.A,
+            up: Phaser.Input.Keyboard.KeyCodes.W,
+            down: Phaser.Input.Keyboard.KeyCodes.S,
+            lightAttack: Phaser.Input.Keyboard.KeyCodes.SHIFT,
+            heavyAttack: Phaser.Input.Keyboard.KeyCodes.SPACE
+        });
+
+        const enemy = createKnight(this, 250, 250, {
+            right: Phaser.Input.Keyboard.KeyCodes.RIGHT,
+            left: Phaser.Input.Keyboard.KeyCodes.LEFT,
+            up: Phaser.Input.Keyboard.KeyCodes.UP,
+            down: Phaser.Input.Keyboard.KeyCodes.DOWN,
+            lightAttack: Phaser.Input.Keyboard.KeyCodes.O,
+            heavyAttack: Phaser.Input.Keyboard.KeyCodes.P
+        });
+
+        const platform = createPlatform(this, 520, 500, 260, 10, 0x4BCB7C);
         platform.addCollider(knight.sprite);
+        platform.addCollider(enemy.sprite);
+        knight.addEnemies([enemy]);
+        enemy.addEnemies([knight]);
+
     }
 
     update() {
