@@ -34,6 +34,12 @@ export function createKnight(scene: Phaser.Scene, x: number, y: number, keys: { 
             frameRate: 10,
             repeat: -1
         });
+        scene.anims.create({
+            key: `knight-${movementKey}-1`,
+            frames: scene.anims.generateFrameNumbers(`knight-${movementKey}`),
+            frameRate: 10,
+            repeat: 0
+        });
     }
 
     const sprite: SpriteWithDynamicBody = scene.physics.add.sprite(x, y, 'knight-Idle');
@@ -55,7 +61,7 @@ export function createKnight(scene: Phaser.Scene, x: number, y: number, keys: { 
         toGetAttack:false
     }
     const movementStateMachine = getMovementStateMachine(sprite, state)
-    const animationStateMachine = getAnimationStateMachine(play, sprite, state, movementStateMachine)
+    const animationStateMachine = getAnimationStateMachine(play,playOnce, sprite, state, movementStateMachine)
     const runState = getRunState(sprite, right, state, left, down)
 
     animationStateMachine.addListener('beforeStateChange', (from, to) => {
@@ -100,21 +106,42 @@ export function createKnight(scene: Phaser.Scene, x: number, y: number, keys: { 
     function play(key: keyof typeof movement) {
         sprite.anims.play(`knight-${key}`);
     }
+    function playOnce(key:keyof typeof movement,update:(animation,frame,currentFrame,totalFrame) => void):Promise<void>{
+        return new Promise((resolve) => {
+            const animationKey = `knight-${key}-1`;
+
+            const totalFrames = sprite.anims.animationManager.get(animationKey).frames.length;
+            function onComplete(animation){
+                if(animation.key === animationKey){
+                    sprite.removeListener('animationcomplete',onComplete);
+                    sprite.removeListener('animationupdate',onUpdate);
+                    resolve(true);
+                }
+            }
+            function onUpdate(animation,frame){
+                if(animation.key === animationKey){
+                    update(animation,frame,frame.textureFrame,totalFrames);
+                }
+            }
+            sprite.addListener('animationcomplete',onComplete);
+            sprite.addListener('animationupdate',onUpdate);
+            sprite.anims.play(animationKey);
+        })
+    }
 
     play('Run');
 
     function addEnemies(enemies: { sprite: Sprite }[]) {
         enemies.forEach(enemy => {
-            let collider: Collider;
-
             enemy.sprite.on('attack', ({rectangle, type}: { rectangle: any, type: 'light' | 'heavy' }) => {
-                collider = sprite.scene.physics.add.collider(sprite, rectangle, () => {
-                    state.toGetAttack = true;
-                })
+                console.log("FUCK WE GOT ATTACK");
+                if(sprite.scene.physics.collide(sprite, rectangle)){
+                    console.log("FUCK SHIT HIT IT")
+                }
             })
             enemy.sprite.on('attackDone', ({rectangle, type}: { rectangle: any, type: 'light' | 'heavy' }) => {
+                console.log("FUCK ATTACK DONE");
                 state.toGetAttack = false;
-                collider.destroy();
             })
         })
     }
