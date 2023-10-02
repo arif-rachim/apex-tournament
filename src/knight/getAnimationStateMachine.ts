@@ -1,17 +1,82 @@
 import {createStateMachine, StateMachine} from "../createStateMachine";
 import {MovementKey} from "./createKnight";
 import {KnightState} from "./knightState"
+import {onPreUpdate} from "../onPreUpdate";
 import SpriteWithDynamicBody = Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
+import StaticGroup = Phaser.Physics.Arcade.StaticGroup;
+import Rectangle = Phaser.GameObjects.Rectangle;
+
+function performHeavyAttack(isHeavyAttack: boolean, sprite: Phaser.Physics.Arcade.Sprite & { body: Phaser.Physics.Arcade.Body }, state: KnightState, playOnce: (key: MovementKey, update: (animation: any, frame: any, currentFrame: any, totalFrame: any) => void) => Promise<void>) {
+    const maxX = sprite.body.maxVelocity.x;
+    const attackWidth = 50;
+
+    let group: StaticGroup | undefined = undefined;
+    let rectangle: Rectangle | undefined = undefined;
+    let attackStart = false;
+    const unRegister = onPreUpdate(sprite, (time, delta) => {
+        if (rectangle) {
+            let x = sprite.x;
+            let y = sprite.y + 7;
+            if (state.flipX) {
+                x = sprite.x - attackWidth;
+            }
+            //@ts-ignore
+            rectangle.body.x = x;
+            //@ts-ignore
+            rectangle.body.y = y;
+        }
+    })
+    playOnce(isHeavyAttack ? 'Attack2' : 'Attack', (animation, frame, currentFrame, totalFrame) => {
+        const startAttack = (0.3 * (totalFrame - 1)) < currentFrame;
+        const endAttack = (0.9 * (totalFrame - 1)) < currentFrame;
+        if (startAttack && !endAttack && !attackStart) {
+            let x = sprite.x + 20;
+            let y = sprite.y + 22;
+            if (state.flipX) {
+                x = sprite.x - 20 - attackWidth;
+            }
+            rectangle = sprite.scene.add.rectangle(x, y, attackWidth, 30);
+            group = sprite.scene.physics.add.staticGroup([rectangle]);
+            attackStart = true;
+            sprite.emit('attack', {rectangle: group, type: isHeavyAttack ? 'heavy' : 'light'});
+        }
+        if (endAttack && attackStart) {
+            attackStart = false
+            sprite.emit('attackDone', {rectangle: group, type: isHeavyAttack ? 'heavy' : 'light'});
+        }
+    }).then(() => {
+        sprite.setMaxVelocity(maxX);
+        if (isHeavyAttack) {
+            state.isHeavyAttackOnProgress = false;
+        } else {
+            state.isLightAttackOnProgress = false;
+        }
+
+        if (group) {
+            group.destroy(true, true);
+        }
+        unRegister();
+    })
+    if (sprite.body.onFloor()) {
+        sprite.setMaxVelocity(maxX / 3);
+    }
+    if (isHeavyAttack) {
+        state.isHeavyAttackOnProgress = true;
+    } else {
+        state.isLightAttackOnProgress = true;
+    }
+
+}
 
 export function getAnimationStateMachine<T>(play: (key: MovementKey) => void,
-                                            playOnce: (key: MovementKey,update:(animation:any,frame:any,currentFrame:any,totalFrame:any) => void) => Promise<void>,
+                                            playOnce: (key: MovementKey, update: (animation: any, frame: any, currentFrame: any, totalFrame: any) => void) => Promise<void>,
                                             sprite: SpriteWithDynamicBody,
                                             state: KnightState,
                                             movementStateMachine: StateMachine<any>) {
     return createStateMachine('idle', {
         idle: {
             from: ['falling', 'running', 'pivoting', 'crouching', 'crouch-walking', 'flipping', 'light-attacking',
-                'heavy-attacking','to-get-attack'],
+                'heavy-attacking', 'to-get-attack', 'jumping'],
             to: 'idle'
         },
         run: {
@@ -43,11 +108,11 @@ export function getAnimationStateMachine<T>(play: (key: MovementKey) => void,
             to: 'crouch-walking'
         },
         lightAttack: {
-            from: ['idle','running','crouching','standing','falling','flipping','crouch-walking'],
+            from: ['idle', 'running', 'crouching', 'standing', 'falling', 'flipping', 'crouch-walking', 'jumping', 'pivoting'],
             to: 'light-attacking'
         },
         heavyAttack: {
-            from: ['idle','running','crouching','standing','falling','flipping','crouch-walking'],
+            from: ['idle', 'running', 'crouching', 'standing', 'falling', 'flipping', 'crouch-walking', 'jumping', 'pivoting'],
             to: 'heavy-attacking'
         },
         getAttack : {
@@ -80,68 +145,10 @@ export function getAnimationStateMachine<T>(play: (key: MovementKey) => void,
             play('CrouchWalk')
         },
         whenHeavyAttack: () => {
-
-            const maxX = sprite.body.maxVelocity.x;
-
-            let x = sprite.x + 22;
-            let y = sprite.y + 22;
-            if (state.flipX) {
-                x = sprite.x - 22;
-            }
-
-            const group = sprite.scene.physics.add.staticGroup([sprite.scene.add.rectangle(x, y, 40, 30)]);
-            let attackStart = false;
-            playOnce('Attack2',(animation, frame, currentFrame, totalFrame) => {
-                // attack starts 30% from start until 30% from end
-                const startAttack = (0.3 * totalFrame) < currentFrame;
-                const endAttack = (0.9 * totalFrame) < currentFrame;
-                if(startAttack && !endAttack && !attackStart){
-                    console.log("START ATTACK ",)
-                    attackStart = true;
-                    sprite.emit('attack', {rectangle: group, type: 'heavy'});
-                }
-                if(endAttack && attackStart){
-                    attackStart = false
-                    sprite.emit('attackDone', {rectangle: group, type: 'heavy'});
-                }
-            }).then(() => {
-                group.destroy(true, true);
-                sprite.setMaxVelocity(maxX);
-                state.isHeavyAttackOnProgress = false;
-            })
-            if (sprite.body.onFloor()) {
-                sprite.setMaxVelocity(maxX / 3);
-            }
-            state.isHeavyAttackOnProgress = true;
+            performHeavyAttack(true, sprite, state, playOnce);
         },
         whenLightAttack: () => {
-            const maxX = sprite.body.maxVelocity.x;
-
-            setTimeout(() => {
-                let x = sprite.x + 22;
-                let y = sprite.y + 22;
-                if (state.flipX) {
-                    x = sprite.x - 22;
-                }
-
-                const rectangle = sprite.scene.physics.add.staticGroup([sprite.scene.add.rectangle(x, y, 40, 30)]);
-                sprite.emit('attack', {rectangle, type: 'light'});
-                setTimeout(() => {
-                    sprite.emit('attackDone', {rectangle, type: 'light'});
-                    rectangle.destroy(true, true);
-                }, 200)
-            }, 300);
-
-            play('Attack')
-            if (sprite.body.onFloor()) {
-                sprite.setMaxVelocity(maxX / 3);
-            }
-
-            state.isLightAttackOnProgress = true;
-            setTimeout(() => {
-                sprite.setMaxVelocity(maxX);
-                state.isLightAttackOnProgress = false;
-            }, 400);
+            performHeavyAttack(false, sprite, state, playOnce);
         },
         whenGetAttack : () => {
             play('Hit');
@@ -167,7 +174,10 @@ export function getAnimationStateMachine<T>(play: (key: MovementKey) => void,
             return sprite.body.onFloor() && Math.sign(sprite.body.velocity.x) === (state.flipX ? -1 : 1) && !state.pressedDown
         },
         isOnPivotState: () => {
-            if(state.toGetAttack){
+            if (state.isHeavyAttackOnProgress || state.isLightAttackOnProgress) {
+                return false;
+            }
+            if (state.toGetAttack) {
                 return false;
             }
             return sprite.body.onFloor() && Math.sign(sprite.body.velocity.x) === (state.flipX ? 1 : -1)

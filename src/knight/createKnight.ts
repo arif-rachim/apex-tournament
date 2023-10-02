@@ -7,7 +7,6 @@ import {movement} from "./movement";
 import {KnightState} from "./knightState";
 import SpriteWithDynamicBody = Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
 import Sprite = Phaser.GameObjects.Sprite;
-import Collider = Phaser.Physics.Arcade.Collider;
 
 
 export type MovementKey = keyof typeof movement;
@@ -133,15 +132,17 @@ export function createKnight(scene: Phaser.Scene, x: number, y: number, keys: { 
 
     function addEnemies(enemies: { sprite: Sprite }[]) {
         enemies.forEach(enemy => {
+            let collider: Phaser.Physics.Arcade.Collider | undefined;
             enemy.sprite.on('attack', ({rectangle, type}: { rectangle: any, type: 'light' | 'heavy' }) => {
-                console.log("FUCK WE GOT ATTACK");
-                if(sprite.scene.physics.collide(sprite, rectangle)){
-                    console.log("FUCK SHIT HIT IT")
-                }
+                collider = sprite.scene.physics.add.collider(sprite, rectangle, () => {
+                    state.toGetAttack = true;
+                })
             })
             enemy.sprite.on('attackDone', ({rectangle, type}: { rectangle: any, type: 'light' | 'heavy' }) => {
-                console.log("FUCK ATTACK DONE");
                 state.toGetAttack = false;
+                if (collider) {
+                    collider.destroy();
+                }
             })
         })
     }

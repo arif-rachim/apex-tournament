@@ -5,21 +5,28 @@ import SpriteWithDynamicBody = Phaser.Types.Physics.Arcade.SpriteWithDynamicBody
 export function getRunState(sprite: SpriteWithDynamicBody, right: Phaser.Input.Keyboard.Key, state: KnightState, left: Phaser.Input.Keyboard.Key, down: Phaser.Input.Keyboard.Key) {
     return createStateMachine('idle', {
         idle: {
-            from: ['running', 'crouching', 'crouch-walking'],
+            from: ['running-right', 'running-left', 'crouching', 'crouch-walking-right', 'crouch-walking-left'],
             to: 'idle'
         },
         crouch: {
-            from: ['idle', 'running', 'crouch-walking'],
+            from: ['idle', 'running-right', 'running-left', 'crouch-walking-right', 'crouch-walking-left'],
             to: 'crouching'
         },
-        run: {
-            from: ['idle', 'crouching', 'crouch-walking'],
-            to: 'running'
+        runRight: {
+            from: ['idle', 'crouching', 'crouch-walking-right', 'crouch-walking-left', 'running-left'],
+            to: 'running-right'
         },
-        
-        crouchWalk: {
-            from: ['idle', 'crouching', 'running'],
-            to: 'crouch-walking'
+        runLeft: {
+            from: ['idle', 'crouching', 'crouch-walking-right', 'crouch-walking-left', 'running-right'],
+            to: 'running-left'
+        },
+        crouchWalkRight: {
+            from: ['idle', 'crouching', 'running-right', 'running-left', 'crouch-walking-left'],
+            to: 'crouch-walking-right'
+        },
+        crouchWalkLeft: {
+            from: ['idle', 'crouching', 'running-right', 'running-left', 'crouch-walking-right'],
+            to: 'crouch-walking-left'
         },
     }, {
         whenIdle: () => {
@@ -28,33 +35,33 @@ export function getRunState(sprite: SpriteWithDynamicBody, right: Phaser.Input.K
         whenCrouch: () => {
             sprite.setAccelerationX(0);
         },
-        whenCrouchWalk: () => {
+        whenCrouchWalkRight: () => {
             sprite.setMaxVelocity(100, 400);
-            if (right.isDown) {
-                sprite.setAccelerationX(500);
-                sprite.setOffset(53, 45);
-                sprite.setFlipX(false);
-                state.flipX = false;
-            }else if (left.isDown) {
-                sprite.setAccelerationX(-500);
-                sprite.setOffset(53, 45);
-                sprite.setFlipX(true);
-                state.flipX = true;
-            }
+            sprite.setAccelerationX(500);
+            sprite.setOffset(53, 45);
+            sprite.setFlipX(false);
+            state.flipX = false;
         },
-        whenRun: () => {
+        whenCrouchWalkLeft: () => {
+            sprite.setMaxVelocity(100, 400);
+            sprite.setAccelerationX(-500);
+            sprite.setOffset(53, 45);
+            sprite.setFlipX(true);
+            state.flipX = true;
+        },
+        whenRunRight: () => {
             sprite.setMaxVelocity(250, 400);
-            if (right.isDown) {
-                sprite.setAccelerationX(1000);
-                sprite.setOffset(53, 45);
-                sprite.setFlipX(false);
-                state.flipX = false;
-            }else if (left.isDown) {
-                sprite.setAccelerationX(-1000);
-                sprite.setOffset(58, 45);
-                sprite.setFlipX(true);
-                state.flipX = true;
-            }
+            sprite.setAccelerationX(1000);
+            sprite.setOffset(53, 45);
+            sprite.setFlipX(false);
+            state.flipX = false;
+        },
+        whenRunLeft: () => {
+            sprite.setMaxVelocity(250, 400);
+            sprite.setAccelerationX(-1000);
+            sprite.setOffset(58, 45);
+            sprite.setFlipX(true);
+            state.flipX = true;
         }
     }, {
         isOnIdleState: () => {
@@ -63,11 +70,17 @@ export function getRunState(sprite: SpriteWithDynamicBody, right: Phaser.Input.K
         isOnCrouchState: () => {
             return down.isDown && !(right.isDown || left.isDown);
         },
-        isOnRunState: () => {
-            return !down.isDown && (right.isDown || left.isDown);
+        isOnRunLeftState: () => {
+            return !down.isDown && left.isDown;
         },
-        isOnCrouchWalkState: () => {
-            return down.isDown && (right.isDown || left.isDown);
+        isOnRunRightState: () => {
+            return !down.isDown && right.isDown;
+        },
+        isOnCrouchWalkRightState: () => {
+            return down.isDown && right.isDown;
+        },
+        isOnCrouchWalkLeftState: () => {
+            return down.isDown && left.isDown;
         }
     });
 }
