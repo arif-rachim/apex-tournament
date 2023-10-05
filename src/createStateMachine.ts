@@ -1,5 +1,5 @@
 type Transitions = Record<string, { from: string | string[] | '*', to: string }>
-export type Method<T> = {
+export type Method<T extends {}> = {
     [k in `when${Capitalize<keyof T>}`]: () => void
 }
 export type Predicate<T> = {
