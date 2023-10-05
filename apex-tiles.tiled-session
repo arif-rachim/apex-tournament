@@ -1,0 +1,28 @@
+{
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "",
+    "expandedProjectPaths": [
+    ],
+    "file.lastUsedOpenFilter": "All Files (*)",
+    "fileStates": {
+        "": {
+            "scaleInDock": 1
+        },
+        "#dirt-grass": {
+            "scaleInDock": 1
+        }
+    },
+    "last.exportedFilePath": "/Users/arifrachim/WebstormProjects/apex-tournament/tiles/tile-map",
+    "last.imagePath": "/Users/arifrachim/WebstormProjects/apex-tournament/tiles/grass-dirt",
+    "map.lastUsedExportFilter": "JSON map files (*.tmj *.json)",
+    "map.layerDataFormat": "1",
+    "openFiles": [
+    ],
+    "project": "apex-tiles.tiled-project",
+    "recentFiles": [
+    ],
+    "tileset.embedInMap": true
+}

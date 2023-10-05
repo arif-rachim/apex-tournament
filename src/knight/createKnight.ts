@@ -57,7 +57,8 @@ export function createKnight(scene: Phaser.Scene, x: number, y: number, keys: { 
         didPressHeavyAttack: false,
         isLightAttackOnProgress: false,
         isHeavyAttackOnProgress: false,
-        toGetAttack:false
+        toGetAttack:false,
+        healthPoint : 1000
     }
     const movementStateMachine = getMovementStateMachine(sprite, state)
     const animationStateMachine = getAnimationStateMachine(play,playOnce, sprite, state, movementStateMachine)
@@ -66,7 +67,6 @@ export function createKnight(scene: Phaser.Scene, x: number, y: number, keys: { 
     animationStateMachine.addListener('beforeStateChange', (from, to) => {
         console.log('movement change ', from, to)
     })
-
     onPreUpdate(sprite, () => {
 
 

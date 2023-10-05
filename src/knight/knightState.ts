@@ -10,6 +10,7 @@ export type KnightState = {
     isLightAttackOnProgress: boolean // this is the flag when the player is doing is light attack
     didPressHeavyAttack: boolean
     isHeavyAttackOnProgress: boolean // this is the flag when the heavy attack is going on,
-    toGetAttack:boolean
+    toGetAttack: boolean,
+    healthPoint: number
 
 }
