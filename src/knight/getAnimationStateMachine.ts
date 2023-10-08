@@ -1,7 +1,7 @@
-import {createStateMachine, StateMachine} from "../createStateMachine";
+import {createStateMachine, StateMachine} from "../utils/createStateMachine";
 import {MovementKey} from "./createKnight";
 import {KnightState} from "./knightState"
-import {onPreUpdate} from "../onPreUpdate";
+import {onPreUpdate} from "../utils/onPreUpdate";
 import SpriteWithDynamicBody = Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
 import StaticGroup = Phaser.Physics.Arcade.StaticGroup;
 import Rectangle = Phaser.GameObjects.Rectangle;

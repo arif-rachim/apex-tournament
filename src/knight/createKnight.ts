@@ -1,5 +1,5 @@
 // @ts-ignore-next-line
-import {onPreUpdate} from "../onPreUpdate";
+import {onPreUpdate} from "../utils/onPreUpdate";
 import {getAnimationStateMachine} from "./getAnimationStateMachine";
 import {getMovementStateMachine} from "./getMovementStateMachine";
 import {getRunState} from "./getRunState";

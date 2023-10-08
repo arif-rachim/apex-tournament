@@ -1,18 +1,26 @@
 import {useEffect} from "react";
 import Phaser from "phaser";
-import {GameScene} from "./GameScene";
-import {IoArrowBackCircle, IoArrowDownCircle, IoArrowForwardCircle, IoArrowUpCircle} from "react-icons/io5";
-import {GiSwordSlice, GiSwordSpin} from "react-icons/gi";
+import {GameScene} from "./game-scene/GameScene";
+import {RightButtons} from "./buttons/RightButtons";
+import {LeftButtons} from "./buttons/LeftButtons";
 
 const sizes = {
     width: 960,
     height: 640
 }
 const SPEED_DOWN = 650;
+
 export default function App() {
     useEffect(() => {
-
-        new Phaser.Game({
+        GameScene.buttons = {
+            right: document.getElementById('right')! as HTMLButtonElement,
+            left: document.getElementById('left')! as HTMLButtonElement,
+            down: document.getElementById('down')! as HTMLButtonElement,
+            up: document.getElementById('up')! as HTMLButtonElement,
+            heavyAttack: document.getElementById('heavyAttack')! as HTMLButtonElement,
+            lightAttack: document.getElementById('lightAttack')! as HTMLButtonElement
+        }
+        const game = new Phaser.Game({
             type: Phaser.AUTO,
             parent: 'game',
             backgroundColor: '#33A5E7',
@@ -35,92 +43,32 @@ export default function App() {
             },
             scene: [GameScene]
         });
-        setTimeout(adjustDivToViewport, 300);
+        game.events.on('ready', () => {
+            adjustDivToViewport();
+            const container = document.getElementById('container');
+            container.style.opacity = '1';
+            container.style.width = 'unset';
+            container.style.height = 'unset';
+        })
     })
     return <div style={{height: '100%', backgroundColor: 'black', overflow: 'hidden'}} onTouchStart={event => {
         event.stopPropagation();
         event.preventDefault();
     }}>
-        <div style={{
+        <div id={'container'} style={{
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            padding:'1rem'
+            padding: '1rem',
+            opacity: 0,
+            width: 0,
+            height: 0,
+            overflow: "hidden"
         }}>
             <div id="game"></div>
         </div>
-        <div style={{
-            display: "flex",
-            position: "fixed",
-            bottom: "5rem",
-            right: "0",
-            gap: "0.5rem"
-        }}>
-            <div style={{
-                display: "flex",
-                flexDirection: "row",
-                position: "relative",
-                gap: "0.5rem"
-            }}>
-                <div id="heavyAttack" style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '4rem',
-                }}><GiSwordSpin/></div>
-                <div id="lightAttack" style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '4rem',
-                }}><GiSwordSlice/></div>
-                <div id="up" style={{
-                    position: "absolute",
-                    top: "-4rem",
-                    left: "2.25rem",
-                    fontSize: "4rem"
-                }}><IoArrowUpCircle/></div>
-            </div>
-        </div>
-        <div style={{
-            display: "flex",
-            position: "fixed",
-            bottom: "4rem",
-            left: "0",
-            gap: "0.5rem"
-        }}>
-            <div style={{
-                display: "flex",
-                flexDirection: "row",
-                position: "relative",
-                gap: "0.5rem"
-            }}>
-
-                <div id="left" style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '4rem'
-                }}>
-                    <IoArrowBackCircle/>
-                </div>
-                <div id="right" style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '4rem'
-                }}><IoArrowForwardCircle/></div>
-                <div id="down" style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '4rem',
-                    position: "absolute",
-                    bottom: "-4rem",
-                    left: "2.25rem"
-                }}><IoArrowDownCircle/></div>
-            </div>
-        </div>
+        <RightButtons/>
+        <LeftButtons/>
     </div>
 }
 

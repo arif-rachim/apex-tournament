@@ -1,4 +1,4 @@
-import {createStateMachine} from "../createStateMachine";
+import {createStateMachine} from "../utils/createStateMachine";
 import {KnightState} from "./knightState";
 import SpriteWithDynamicBody = Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
 
