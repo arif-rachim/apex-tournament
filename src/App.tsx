@@ -5,6 +5,7 @@ import {IoIosCreate} from "react-icons/io";
 import {motion} from "framer-motion";
 import Peer, {DataConnection} from "peerjs";
 import {createLogger} from "./utils/createLogger";
+import {GameScene} from "./game-scene/GameScene";
 
 const appUUID = "ecd5660b-032e-4e54-95a1-c5ba7250ea17-apex-tournament";
 const log = createLogger('App.tsx');
@@ -20,6 +21,7 @@ export function App() {
     const connectionRef = useRef<DataConnection|undefined>(undefined);
     useEffect(() => {
         if(opponentName){
+            GameScene.connection = connectionRef.current!;
             setAppState('game-is-ready');
         }
         return () => {
@@ -50,7 +52,6 @@ export function App() {
             log('peer => connection', connection);
             connectionRef.current = connection;
             connection.on('data', (data:any) => {
-                log('connection => data', data)
                 if('myName' in data){
                     setPlayerOpponent(data.myName as string)
                 }
@@ -251,7 +252,7 @@ export function App() {
             </div>
         </div>}
         {appState === 'game-is-ready' &&
-            <PlayGame/>
+            <PlayGame playerName={playerName} opponentName={opponentName}/>
         }
     </div>
 }

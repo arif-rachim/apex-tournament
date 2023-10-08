@@ -6,10 +6,9 @@ export type KnightState = {
     didPressJump: boolean,
     flipX: boolean,
     pressedDown: boolean,
-    didPressLightAttack: boolean // this is the moment when the player press attack key
-    isLightAttackOnProgress: boolean // this is the flag when the player is doing is light attack
+    didPressLightAttack: boolean // this is the moment when the player press attack key this is the flag when the player is doing is light attack
     didPressHeavyAttack: boolean
-    isHeavyAttackOnProgress: boolean // this is the flag when the heavy attack is going on,
+    attackOnProgress: boolean // this is the flag when the heavy attack is going on,
     toGetAttack: boolean,
     healthPoint: number
 

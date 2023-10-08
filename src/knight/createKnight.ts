@@ -5,22 +5,28 @@ import {getMovementStateMachine} from "./getMovementStateMachine";
 import {getRunState} from "./getRunState";
 import {movement} from "./movement";
 import {KnightState} from "./knightState";
+import {Message} from "../communication-message/Message";
+import {createLogger} from "../utils/createLogger";
 import SpriteWithDynamicBody = Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
 import Sprite = Phaser.GameObjects.Sprite;
 
 
 export type MovementKey = keyof typeof movement;
-function invoke(callback:() => void){
-    return function preventEvent(event:Event){
+const log = createLogger('createKnight.ts');
+
+function invoke(callback: () => void) {
+    return function preventEvent(event: Event) {
         event.stopPropagation();
         event.preventDefault();
         event.stopImmediatePropagation()
         callback()
     }
 }
-export function createKnight(scene: Phaser.Scene, x: number, y: number,
+
+export function createKnight(name: string, scene: Phaser.Scene, x: number, y: number,
                              keys: { right: number, left: number, up: number, down: number, lightAttack: number, heavyAttack: number },
-                             buttons?: { right: HTMLButtonElement, left: HTMLButtonElement, up: HTMLButtonElement, down: HTMLButtonElement, lightAttack: HTMLButtonElement, heavyAttack: HTMLButtonElement }
+                             buttons?: { right: HTMLButtonElement, left: HTMLButtonElement, up: HTMLButtonElement, down: HTMLButtonElement, lightAttack: HTMLButtonElement, heavyAttack: HTMLButtonElement },
+                             messageToOpponent?: (event: Message) => void
 ) {
     const {
         right: rightKey,
@@ -38,20 +44,50 @@ export function createKnight(scene: Phaser.Scene, x: number, y: number,
     const heavyAttack = scene.input.keyboard?.addKey(heavyAttackKey)!;
     const lightAttack = scene.input.keyboard?.addKey(lightAttackKey)!;
 
-    if (buttons) {
-        buttons.right.addEventListener('touchstart', invoke(() => right.isDown = true));
-        buttons.right.addEventListener('touchend', invoke(() => right.isDown = false));
-        buttons.left.addEventListener('touchstart', invoke(() => left.isDown = true));
-        buttons.left.addEventListener('touchend', invoke(() => left.isDown = false));
+    if (buttons && messageToOpponent) {
+        buttons.right.addEventListener('touchstart', invoke(() => {
+            messageToOpponent({type: 'right-is-down', value: true});
+            right.isDown = true
+        }));
+        buttons.right.addEventListener('touchend', invoke(() => {
+            messageToOpponent({type: 'right-is-down', value: false});
+            right.isDown = false
+        }));
+        buttons.left.addEventListener('touchstart', invoke(() => {
+            messageToOpponent({type: 'left-is-down', value: true});
+            left.isDown = true
+        }));
+        buttons.left.addEventListener('touchend', invoke(() => {
+            messageToOpponent({type: 'left-is-down', value: false})
+            left.isDown = false
+        }));
         buttons.up.addEventListener('touchstart', invoke(() => {
+            messageToOpponent({type: 'did-press-jump', value: true})
             state.didPressJump = true;
+            messageToOpponent({type: 'up-is-down', value: true})
             up.isDown = true;
         }));
-        buttons.up.addEventListener('touchend', invoke(() => up.isDown = false));
-        buttons.down.addEventListener('touchstart', invoke(() => down.isDown = true))
-        buttons.down.addEventListener('touchend', invoke(() => down.isDown = false))
-        buttons.heavyAttack.addEventListener('touchstart', invoke(() => state.didPressHeavyAttack = true))
-        buttons.lightAttack.addEventListener('touchstart', invoke(() => state.didPressLightAttack = true))
+        buttons.up.addEventListener('touchend', invoke(() => {
+            messageToOpponent({type: 'up-is-down', value: false})
+            up.isDown = false
+
+        }));
+        buttons.down.addEventListener('touchstart', invoke(() => {
+            messageToOpponent({type: 'down-is-down', value: true})
+            down.isDown = true
+        }))
+        buttons.down.addEventListener('touchend', invoke(() => {
+            messageToOpponent({type: 'down-is-down', value: false})
+            down.isDown = false
+        }))
+        buttons.heavyAttack.addEventListener('touchstart', invoke(() => {
+            messageToOpponent({type: 'did-press-heavy-attack', value: true})
+            state.didPressHeavyAttack = true
+        }))
+        buttons.lightAttack.addEventListener('touchstart', invoke(() => {
+            messageToOpponent({type: 'did-press-light-attack', value: true})
+            state.didPressLightAttack = true
+        }))
 
     }
 
@@ -91,17 +127,16 @@ export function createKnight(scene: Phaser.Scene, x: number, y: number,
         isJumping: false,
         didPressLightAttack: false,
         didPressHeavyAttack: false,
-        isLightAttackOnProgress: false,
-        isHeavyAttackOnProgress: false,
-        toGetAttack:false,
-        healthPoint : 1000
+        toGetAttack: false,
+        healthPoint: 1000,
+        attackOnProgress: false
     }
     const movementStateMachine = getMovementStateMachine(sprite, state)
-    const animationStateMachine = getAnimationStateMachine(play,playOnce, sprite, state, movementStateMachine)
+    const animationStateMachine = getAnimationStateMachine(name, play, playOnce, sprite, state, movementStateMachine)
     const runState = getRunState(sprite, right, state, left, down)
 
     animationStateMachine.addListener('beforeStateChange', (from, to) => {
-        console.log('movement change ', from, to)
+        log(name, 'movement change ', from, to)
     })
     onPreUpdate(sprite, () => {
         state.didPressJump = !state.didPressJump ? Phaser.Input.Keyboard.JustDown(up) : state.didPressJump;
@@ -134,13 +169,16 @@ export function createKnight(scene: Phaser.Scene, x: number, y: number,
                 break;
             }
         }
+        if (messageToOpponent) {
+            messageToOpponent({type: 'character-position', x: sprite.body.x, y: sprite.body.y})
+        }
     })
 
     function play(key: keyof typeof movement) {
         sprite.anims.play(`knight-${key}`);
     }
     //@ts-ignore
-    function playOnce(key:keyof typeof movement,update:(animation,frame,currentFrame,totalFrame) => void):Promise<void>{
+    function playOnce(key:keyof typeof movement,update?:(animation,frame,currentFrame,totalFrame) => void):Promise<void>{
         return new Promise((resolve) => {
             const animationKey = `knight-${key}-1`;
 
@@ -154,7 +192,7 @@ export function createKnight(scene: Phaser.Scene, x: number, y: number,
             }
             //@ts-ignore
             function onUpdate(animation,frame){
-                if(animation.key === animationKey){
+                if(animation.key === animationKey && update){
                     update(animation,frame,frame.textureFrame,totalFrames);
                 }
             }
@@ -168,26 +206,23 @@ export function createKnight(scene: Phaser.Scene, x: number, y: number,
 
     function addEnemies(enemies: { sprite: Sprite }[]) {
         enemies.forEach(enemy => {
-            let collider: Phaser.Physics.Arcade.Collider | undefined;
             //@ts-ignore
             enemy.sprite.on('attack', ({rectangle, type}: { rectangle: any, type: 'light' | 'heavy' }) => {
-                collider = sprite.scene.physics.add.collider(sprite, rectangle, () => {
-                    state.toGetAttack = true;
-                })
-            })
-            //@ts-ignore
-            enemy.sprite.on('attackDone', ({rectangle, type}: { rectangle: any, type: 'light' | 'heavy' }) => {
-                state.toGetAttack = false;
-                if (collider) {
-                    collider.destroy();
-                }
+                state.toGetAttack = sprite.scene.physics.collide(sprite, rectangle);
             })
         })
     }
 
     return {
         sprite,
-        addEnemies
+        addEnemies,
+        right,
+        left,
+        up,
+        down,
+        heavyAttack,
+        lightAttack,
+        state
     };
 }
 

@@ -2,7 +2,7 @@ import {sizes} from "../PlayGame";
 
 export function adjustDivToViewport() {
     const div = document.getElementById('game');
-    if(div === undefined){
+    if(div === undefined || div === null){
         return;
     }
     const viewportWidth = window.innerWidth - 24;

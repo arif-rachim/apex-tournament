@@ -1,4 +1,4 @@
-import {useEffect, useRef, useState} from "react";
+import {useEffect, useState} from "react";
 import Phaser from "phaser";
 import {GameScene} from "./game-scene/GameScene";
 import {RightButtons} from "./buttons/RightButtons";
@@ -12,7 +12,7 @@ export const sizes = {
 }
 const SPEED_DOWN = 650;
 
-export default function PlayGame() {
+export default function PlayGame(props: { playerName: string, opponentName: string }) {
     const [ready, setReady] = useState(false);
 
     useEffect(() => {
@@ -24,6 +24,8 @@ export default function PlayGame() {
             heavyAttack: document.getElementById('heavyAttack')! as HTMLButtonElement,
             lightAttack: document.getElementById('lightAttack')! as HTMLButtonElement
         }
+        GameScene.names.playerName = props.playerName;
+        GameScene.names.opponentName = props.opponentName;
         const game = new Phaser.Game({
             type: Phaser.AUTO,
             parent: 'game',
@@ -52,7 +54,7 @@ export default function PlayGame() {
             setReady(true);
         })
         return () => {
-            game.destroy();
+            game.destroy(true);
         }
     }, []);
     return <div style={{height: '100%', backgroundColor: 'black', overflow: 'hidden'}} onTouchStart={event => {
