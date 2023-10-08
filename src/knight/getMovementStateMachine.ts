@@ -25,9 +25,11 @@ export function getMovementStateMachine(sprite: SpriteWithDynamicBody, state: Kn
         },
         whenFlip: () => {
             sprite.setVelocityY(-350);
+            state.didPressJump = false;
         },
         whenJump: () => {
             sprite.setVelocityY(-750);
+            state.didPressJump = false;
         },
         whenTouchDown: () => {
         }

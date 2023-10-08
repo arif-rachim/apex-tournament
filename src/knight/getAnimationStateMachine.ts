@@ -148,9 +148,11 @@ export function getAnimationStateMachine(play: (key: MovementKey) => void,
         },
         whenHeavyAttack: () => {
             performHeavyAttack(true, sprite, state, playOnce);
+            state.didPressHeavyAttack = false;
         },
         whenLightAttack: () => {
             performHeavyAttack(false, sprite, state, playOnce);
+            state.didPressLightAttack = false;
         },
         whenGetAttack : () => {
             play('Hit');

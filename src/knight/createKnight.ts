@@ -10,8 +10,18 @@ import Sprite = Phaser.GameObjects.Sprite;
 
 
 export type MovementKey = keyof typeof movement;
-
-export function createKnight(scene: Phaser.Scene, x: number, y: number, keys: { right: number, left: number, up: number, down: number, lightAttack: number, heavyAttack: number }) {
+function invoke(callback:() => void){
+    return function preventEvent(event:Event){
+        event.stopPropagation();
+        event.preventDefault();
+        event.stopImmediatePropagation()
+        callback()
+    }
+}
+export function createKnight(scene: Phaser.Scene, x: number, y: number,
+                             keys: { right: number, left: number, up: number, down: number, lightAttack: number, heavyAttack: number },
+                             buttons?: { right: HTMLButtonElement, left: HTMLButtonElement, up: HTMLButtonElement, down: HTMLButtonElement, lightAttack: HTMLButtonElement, heavyAttack: HTMLButtonElement }
+) {
     const {
         right: rightKey,
         heavyAttack: heavyAttackKey,
@@ -20,25 +30,51 @@ export function createKnight(scene: Phaser.Scene, x: number, y: number, keys: { 
         left: leftKey,
         down: downKey
     } = keys;
+
     const right = scene.input.keyboard?.addKey(rightKey)!;
     const left = scene.input.keyboard?.addKey(leftKey)!;
     const up = scene.input.keyboard?.addKey(upKey)!;
     const down = scene.input.keyboard?.addKey(downKey)!;
     const heavyAttack = scene.input.keyboard?.addKey(heavyAttackKey)!;
     const lightAttack = scene.input.keyboard?.addKey(lightAttackKey)!;
+
+    if (buttons) {
+        buttons.right.addEventListener('touchstart', invoke(() => right.isDown = true));
+        buttons.right.addEventListener('touchend', invoke(() => right.isDown = false));
+        buttons.left.addEventListener('touchstart', invoke(() => left.isDown = true));
+        buttons.left.addEventListener('touchend', invoke(() => left.isDown = false));
+        buttons.up.addEventListener('touchstart', invoke(() => {
+            state.didPressJump = true;
+            up.isDown = true;
+        }));
+        buttons.up.addEventListener('touchend', invoke(() => up.isDown = false));
+        buttons.down.addEventListener('touchstart', invoke(() => down.isDown = true))
+        buttons.down.addEventListener('touchend', invoke(() => down.isDown = false))
+        buttons.heavyAttack.addEventListener('touchstart', invoke(() => state.didPressHeavyAttack = true))
+        buttons.lightAttack.addEventListener('touchstart', invoke(() => state.didPressLightAttack = true))
+
+    }
+
     for (const movementKey of Object.keys(movement)) {
-        scene.anims.create({
-            key: `knight-${movementKey}`,
-            frames: scene.anims.generateFrameNumbers(`knight-${movementKey}`),
-            frameRate: 10,
-            repeat: -1
-        });
-        scene.anims.create({
-            key: `knight-${movementKey}-1`,
-            frames: scene.anims.generateFrameNumbers(`knight-${movementKey}`),
-            frameRate: 10,
-            repeat: 0
-        });
+        let key = `knight-${movementKey}`;
+        if (!scene.anims.exists(key)) {
+            scene.anims.create({
+                key: key,
+                frames: scene.anims.generateFrameNumbers(`knight-${movementKey}`),
+                frameRate: 10,
+                repeat: -1
+            });
+        }
+        key = `knight-${movementKey}-1`;
+        if (!scene.anims.exists(key)) {
+            scene.anims.create({
+                key: `knight-${movementKey}-1`,
+                frames: scene.anims.generateFrameNumbers(`knight-${movementKey}`),
+                frameRate: 10,
+                repeat: 0
+            });
+        }
+
     }
 
     const sprite: SpriteWithDynamicBody = scene.physics.add.sprite(x, y, 'knight-Idle');
@@ -68,12 +104,10 @@ export function createKnight(scene: Phaser.Scene, x: number, y: number, keys: { 
         console.log('movement change ', from, to)
     })
     onPreUpdate(sprite, () => {
-
-
-        state.didPressJump = Phaser.Input.Keyboard.JustDown(up);
+        state.didPressJump = !state.didPressJump ? Phaser.Input.Keyboard.JustDown(up) : state.didPressJump;
+        state.didPressLightAttack = !state.didPressLightAttack ? Phaser.Input.Keyboard.JustDown(lightAttack) : state.didPressLightAttack;
+        state.didPressHeavyAttack = !state.didPressHeavyAttack ? Phaser.Input.Keyboard.JustDown(heavyAttack) : state.didPressHeavyAttack;
         state.pressedDown = down.isDown;
-        state.didPressLightAttack = Phaser.Input.Keyboard.JustDown(lightAttack);
-        state.didPressHeavyAttack = Phaser.Input.Keyboard.JustDown(heavyAttack);
 
         if (movementStateMachine.is('jumping') || movementStateMachine.is('flipping')) {
             if (!up.isDown && sprite.body.velocity.y < -150) {

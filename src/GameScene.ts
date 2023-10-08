@@ -2,13 +2,6 @@ import './style.css'
 import * as Phaser from "phaser";
 import {createKnight, staticPreLoad} from "./knight/createKnight";
 
-
-
-const sizes = {
-    width: 960,
-    height: 640
-}
-
 // window.addEventListener('orientationchange',() => {
 //     switch (screen.orientation.type) {
 //         case "landscape-primary":
@@ -28,9 +21,9 @@ const sizes = {
 //     }
 // })
 //const canvas: HTMLCanvasElement = document.getElementById('gameCanvas') as HTMLCanvasElement;
-const SPEED_DOWN = 650;
 
-class GameScene extends Phaser.Scene {
+
+export class GameScene extends Phaser.Scene {
     constructor() {
         super({key: 'scene-1'});
 
@@ -57,8 +50,15 @@ class GameScene extends Phaser.Scene {
             left: Phaser.Input.Keyboard.KeyCodes.A,
             up: Phaser.Input.Keyboard.KeyCodes.W,
             down: Phaser.Input.Keyboard.KeyCodes.S,
-            lightAttack: Phaser.Input.Keyboard.KeyCodes.R,
-            heavyAttack: Phaser.Input.Keyboard.KeyCodes.T
+            lightAttack: Phaser.Input.Keyboard.KeyCodes.O,
+            heavyAttack: Phaser.Input.Keyboard.KeyCodes.P
+        },{
+            right:document.getElementById('right')! as HTMLButtonElement,
+            left:document.getElementById('left')! as HTMLButtonElement,
+            down:document.getElementById('down')! as HTMLButtonElement,
+            up:document.getElementById('up')! as HTMLButtonElement,
+            heavyAttack:document.getElementById('heavyAttack')! as HTMLButtonElement,
+            lightAttack:document.getElementById('lightAttack')! as HTMLButtonElement
         });
 
         const enemy = createKnight(this, 250, 250, {
@@ -83,28 +83,3 @@ class GameScene extends Phaser.Scene {
 
     }
 }
-
-new Phaser.Game({
-    type: Phaser.AUTO,
-    parent: 'game',
-    backgroundColor: '#33A5E7',
-    scale: {
-        width : sizes.width,
-        height : sizes.height,
-        mode: Phaser.Scale.FIT,
-        autoCenter: Phaser.Scale.CENTER_BOTH
-    },
-    render: {
-        pixelArt: true
-    },
-    physics: {
-        default: 'arcade',
-        arcade: {
-            gravity: {y: SPEED_DOWN},
-            debug: false,
-            debugShowStaticBody: false,
-            debugShowBody: false
-        }
-    },
-    scene: [GameScene]
-})

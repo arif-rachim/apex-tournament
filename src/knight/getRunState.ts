@@ -2,7 +2,7 @@ import {createStateMachine} from "../createStateMachine";
 import {KnightState} from "./knightState";
 import SpriteWithDynamicBody = Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
 
-export function getRunState(sprite: SpriteWithDynamicBody, right: Phaser.Input.Keyboard.Key, state: KnightState, left: Phaser.Input.Keyboard.Key, down: Phaser.Input.Keyboard.Key) {
+export function getRunState(sprite: SpriteWithDynamicBody, right: {isDown:boolean}, state: KnightState, left: {isDown:boolean}, down: {isDown:boolean}) {
     return createStateMachine('idle', {
         idle: {
             from: ['running-right', 'running-left', 'crouching', 'crouch-walking-right', 'crouch-walking-left'],
