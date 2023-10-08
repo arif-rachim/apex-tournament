@@ -28,5 +28,16 @@ body{
 
 canvas{
   border-radius: 1rem;
-  border: 2px solid white;
+}
+#root{
+  height: 100%;
+}
+
+input{
+  border: 1px solid white;
+  padding: 0.5rem 1rem;
+  width: 100%;
+  font-size: 1rem;
+  border-radius: 1rem;
+  text-transform: uppercase;
 }
