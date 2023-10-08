@@ -1,8 +1,7 @@
 import './style.css'
-import Phaser from "phaser";
+import * as Phaser from "phaser";
 import {createKnight, staticPreLoad} from "./knight/createKnight";
-import {createPlatform} from "./createPlatform";
-import STATIC_BODY = Phaser.Physics.Arcade.STATIC_BODY;
+
 
 
 const sizes = {
@@ -28,19 +27,19 @@ const sizes = {
 //             console.log("The orientation API isn't supported in this browser :(");
 //     }
 // })
-const canvas: HTMLCanvasElement = document.getElementById('gameCanvas') as HTMLCanvasElement;
+//const canvas: HTMLCanvasElement = document.getElementById('gameCanvas') as HTMLCanvasElement;
 const SPEED_DOWN = 650;
 
 class GameScene extends Phaser.Scene {
-    constructor(props) {
+    constructor() {
         super({key: 'scene-1'});
 
     }
 
     preload() {
         staticPreLoad(this);
-        this.load.tilemapTiledJSON('level-1','tiles/tile-map/level-1.json');
-        this.load.image('dirt-grass-sheet','tiles/grass-dirt/Tileset5.png');
+        this.load.tilemapTiledJSON('level-1',import.meta.env.BASE_URL+'/tiles/tile-map/level-1.json');
+        this.load.image('dirt-grass-sheet',import.meta.env.BASE_URL+'/tiles/grass-dirt/Tileset5.png');
     }
 
     create() {
@@ -85,7 +84,7 @@ class GameScene extends Phaser.Scene {
     }
 }
 
-const game = new Phaser.Game({
+new Phaser.Game({
     type: Phaser.AUTO,
     parent: 'game',
     backgroundColor: '#33A5E7',

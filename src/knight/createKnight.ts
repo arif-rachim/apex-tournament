@@ -105,18 +105,20 @@ export function createKnight(scene: Phaser.Scene, x: number, y: number, keys: { 
     function play(key: keyof typeof movement) {
         sprite.anims.play(`knight-${key}`);
     }
+    //@ts-ignore
     function playOnce(key:keyof typeof movement,update:(animation,frame,currentFrame,totalFrame) => void):Promise<void>{
         return new Promise((resolve) => {
             const animationKey = `knight-${key}-1`;
 
             const totalFrames = sprite.anims.animationManager.get(animationKey).frames.length;
-            function onComplete(animation){
+            function onComplete(animation:any){
                 if(animation.key === animationKey){
                     sprite.removeListener('animationcomplete',onComplete);
                     sprite.removeListener('animationupdate',onUpdate);
-                    resolve(true);
+                    resolve();
                 }
             }
+            //@ts-ignore
             function onUpdate(animation,frame){
                 if(animation.key === animationKey){
                     update(animation,frame,frame.textureFrame,totalFrames);
@@ -133,11 +135,13 @@ export function createKnight(scene: Phaser.Scene, x: number, y: number, keys: { 
     function addEnemies(enemies: { sprite: Sprite }[]) {
         enemies.forEach(enemy => {
             let collider: Phaser.Physics.Arcade.Collider | undefined;
+            //@ts-ignore
             enemy.sprite.on('attack', ({rectangle, type}: { rectangle: any, type: 'light' | 'heavy' }) => {
                 collider = sprite.scene.physics.add.collider(sprite, rectangle, () => {
                     state.toGetAttack = true;
                 })
             })
+            //@ts-ignore
             enemy.sprite.on('attackDone', ({rectangle, type}: { rectangle: any, type: 'light' | 'heavy' }) => {
                 state.toGetAttack = false;
                 if (collider) {
@@ -155,6 +159,7 @@ export function createKnight(scene: Phaser.Scene, x: number, y: number, keys: { 
 
 export function staticPreLoad(scene: Phaser.Scene) {
     for (const movementKey of Object.keys(movement)) {
+        //@ts-ignore
         scene.load.spritesheet(`knight-${movementKey}`, movement[movementKey], {
             frameWidth: 120,
             frameHeight: 80

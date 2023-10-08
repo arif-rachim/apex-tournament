@@ -3,8 +3,12 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "",
+    "activeFile": "public/tiles/tile-map/level-1.json",
     "expandedProjectPaths": [
+        "public/tiles",
+        "public/tiles/tile-map",
+        "public",
+        "."
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
@@ -13,6 +17,17 @@
         },
         "#dirt-grass": {
             "scaleInDock": 1
+        },
+        "public/tiles/tile-map/level-1.json": {
+            "scale": 0.6085937499999999,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 340.12836970474973,
+                "y": 340.9499358151477
+            }
+        },
+        "public/tiles/tile-map/level-1.json#dirt-grass": {
+            "scaleInDock": 1
         }
     },
     "last.exportedFilePath": "/Users/arifrachim/WebstormProjects/apex-tournament/tiles/tile-map",
@@ -20,9 +35,11 @@
     "map.lastUsedExportFilter": "JSON map files (*.tmj *.json)",
     "map.layerDataFormat": "1",
     "openFiles": [
+        "public/tiles/tile-map/level-1.json"
     ],
     "project": "apex-tiles.tiled-project",
     "recentFiles": [
+        "public/tiles/tile-map/level-1.json"
     ],
     "tileset.embedInMap": true
 }

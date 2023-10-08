@@ -4,16 +4,16 @@ export function onPreUpdate(sprite: Phaser.GameObjects.Sprite, preUpdate: (time:
     const me: Sprite & { updateListeners?: Array<(time: number, delta: number) => void>, preUpdateOriginal?: (time: number, delta: number) => void } = sprite as any;
 
     me.updateListeners = me.updateListeners || [];
-    me.preUpdateOriginal = me.preUpdateOriginal || me.preUpdate;
+    me.preUpdateOriginal = me.preUpdateOriginal || (me as any).preUpdate;
     me.updateListeners.push(preUpdate);
-    me.preUpdate = (time: number, delta: number) => {
+    (me as any).preUpdate = (time: number, delta: number) => {
         if (me.preUpdateOriginal) {
             me.preUpdateOriginal(time, delta);
         }
         me.updateListeners?.forEach(c => c(time, delta));
     };
     return function unregisterListener() {
-        const index = me.updateListeners?.indexOf(preUpdate);
+        const index:any = me.updateListeners?.indexOf(preUpdate);
         return (me.updateListeners || []).splice(index, 1);
     }
 }

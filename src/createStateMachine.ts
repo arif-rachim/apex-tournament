@@ -1,8 +1,10 @@
-type Transitions = Record<string, { from: string | string[] | '*', to: string }>
+type Transitions = Record<string, { from: unknown, to: string }>
 export type Method<T extends {}> = {
+    //@ts-ignore
     [k in `when${Capitalize<keyof T>}`]: () => void
 }
 export type Predicate<T> = {
+    //@ts-ignore
     [k in `isOn${Capitalize<keyof T>}State`]: () => boolean
 }
 export type Value<V> = V extends { to: infer C } ? C : never;
@@ -25,6 +27,7 @@ export function createStateMachine<T extends Transitions, M extends Method<T>, P
     }
 
     function isOn(key: keyof T) {
+        //@ts-ignore
         return predicates[`isOn${toCapitalize(key)}State`]()
     }
 
@@ -51,7 +54,9 @@ export function createStateMachine<T extends Transitions, M extends Method<T>, P
             const transition = transitions[key];
             const nextState = transition.to as State<T>;
             listeners.filter(i => i.event === 'beforeStateChange').forEach(i => i.callback(currentState, nextState));
+            //@ts-ignore
             const method = `when${toCapitalize(key)}`;
+            //@ts-ignore
             methods[method]();
             listeners.filter(i => i.event === 'afterStateChange').forEach(i => i.callback(currentState, nextState));
             currentState = nextState;
@@ -72,6 +77,7 @@ export function createStateMachine<T extends Transitions, M extends Method<T>, P
         addListener,
         getTransitions,
         isOn,
+        //@ts-ignore
         is,
         move
     };

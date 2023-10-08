@@ -13,7 +13,7 @@ function performHeavyAttack(isHeavyAttack: boolean, sprite: Phaser.Physics.Arcad
     let group: StaticGroup | undefined = undefined;
     let rectangle: Rectangle | undefined = undefined;
     let attackStart = false;
-    const unRegister = onPreUpdate(sprite, (time, delta) => {
+    const unRegister = onPreUpdate(sprite, () => {
         if (rectangle) {
             let x = sprite.x;
             let y = sprite.y + 7;
@@ -26,7 +26,9 @@ function performHeavyAttack(isHeavyAttack: boolean, sprite: Phaser.Physics.Arcad
             rectangle.body.y = y;
         }
     })
+    //@ts-ignore
     playOnce(isHeavyAttack ? 'Attack2' : 'Attack', (animation, frame, currentFrame, totalFrame) => {
+
         const startAttack = (0.3 * (totalFrame - 1)) < currentFrame;
         const endAttack = (0.9 * (totalFrame - 1)) < currentFrame;
         if (startAttack && !endAttack && !attackStart) {
@@ -68,7 +70,7 @@ function performHeavyAttack(isHeavyAttack: boolean, sprite: Phaser.Physics.Arcad
 
 }
 
-export function getAnimationStateMachine<T>(play: (key: MovementKey) => void,
+export function getAnimationStateMachine(play: (key: MovementKey) => void,
                                             playOnce: (key: MovementKey, update: (animation: any, frame: any, currentFrame: any, totalFrame: any) => void) => Promise<void>,
                                             sprite: SpriteWithDynamicBody,
                                             state: KnightState,
