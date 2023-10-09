@@ -22,7 +22,9 @@ function invoke(callback: () => void) {
         callback()
     }
 }
-export function createKnight(name: string, scene: Phaser.Scene, x: number, y: number,
+
+export function createKnight(name: string, scene: Phaser.Scene,
+                             location:{x: number, y: number,isFlip:boolean},
                              keys: { right: number, left: number, up: number, down: number, lightAttack: number, heavyAttack: number },
                              buttons?: { right: HTMLButtonElement, left: HTMLButtonElement, up: HTMLButtonElement, down: HTMLButtonElement, lightAttack: HTMLButtonElement, heavyAttack: HTMLButtonElement },
                              messageToOpponent?: (event: Message) => void
@@ -145,15 +147,18 @@ export function createKnight(name: string, scene: Phaser.Scene, x: number, y: nu
 
     }
 
-    const sprite: SpriteWithDynamicBody = scene.physics.add.sprite(x, y, 'knight-Idle');
+    const sprite: SpriteWithDynamicBody = scene.physics.add.sprite(location.x, location.y, 'knight-Idle');
     sprite.setCollideWorldBounds(true);
     sprite.setSize(10, 35);
     sprite.setOffset(53, 45);
     sprite.setMaxVelocity(250, 400);
     sprite.setDragX(700);
+    if(location.isFlip){
+        sprite.setFlipX(location.isFlip)
+    }
     const state: KnightState = {
         canDoubleJump: false,
-        flipX: false,
+        flipX: location.isFlip,
         didPressJump: false,
         pressedDown: false,
         isJumping: false,
@@ -161,7 +166,8 @@ export function createKnight(name: string, scene: Phaser.Scene, x: number, y: nu
         didPressHeavyAttack: false,
         toGetAttack: false,
         healthPoint: 1000,
-        attackOnProgress: false
+        attackOnProgress: false,
+        currentPosition : {x:0,y:0}
     }
     const movementStateMachine = getMovementStateMachine(sprite, state)
     const animationStateMachine = getAnimationStateMachine(name, play, playOnce, sprite, state, movementStateMachine)
@@ -201,10 +207,16 @@ export function createKnight(name: string, scene: Phaser.Scene, x: number, y: nu
                 break;
             }
         }
-        if (messageToOpponent) {
-            messageToOpponent({type: 'character-position', x: sprite.body.x, y: sprite.body.y})
+        if (messageToOpponent && positionMoved()) {
+            state.currentPosition.x = sprite.body.x;
+            state.currentPosition.y = sprite.body.y;
+            messageToOpponent({type: 'character-position', ...state.currentPosition})
         }
     })
+
+    function positionMoved(){
+        return sprite.body.x !== state.currentPosition.x || sprite.body.y !== state.currentPosition.y;
+    }
 
     function play(key: keyof typeof movement) {
         sprite.anims.play(`knight-${key}`);
@@ -254,7 +266,8 @@ export function createKnight(name: string, scene: Phaser.Scene, x: number, y: nu
         down,
         heavyAttack,
         lightAttack,
-        state
+        state,
+        name
     };
 }
 

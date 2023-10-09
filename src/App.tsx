@@ -49,7 +49,7 @@ export function App() {
         });
         //@ts-ignore
         peer.on('connection', (connection) => {
-            log('peer => connection', connection);
+            //log('peer => connection', connection);
             connectionRef.current = connection;
             connection.on('data', (data:any) => {
                 if('myName' in data){
@@ -94,7 +94,6 @@ export function App() {
                 if('myName' in data){
                     setPlayerOpponent(data.myName as string);
                 }
-                log('connection => data', data);
             });
         });
 
@@ -157,19 +156,30 @@ export function App() {
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                padding:'1rem 2rem',
+                justifyContent: 'center',
+                height: '100%',
+                padding: '1rem',
             }}>
-                {appState === 'create-a-game' && <div>
+                {appState === 'create-a-game' && <div style={{maxWidth: 600}}>
                     <div style={{fontSize: '1.5rem'}}>
                         Let's whip up a spot to host this game, fam!
                     </div>
-                    <div style={{fontSize:'0.9rem',fontStyle:'italic',marginTop:'1rem'}}>Yo, gotta set up a spot to throw down a game. Once you've got that room up and running, hit your homie up and tell 'em to slide into the room you just cooked up. That way, when they hop in, they'll be linked straight to your game. It's that peer-to-peer flow, so watch out for any janky connections in the mix. Anyway, may the illest player take the crown!</div>
+                    <div style={{fontSize: '0.9rem', fontStyle: 'italic', marginTop: '1rem'}}>Yo, gotta set up a spot to
+                        throw down a game. Once you've got that room up and running, hit your homie up and tell 'em to
+                        slide into the room you just cooked up. That way, when they hop in, they'll be linked straight
+                        to your game. It's that peer-to-peer flow, so watch out for any janky connections in the mix.
+                        Anyway, may the illest player take the crown!
+                    </div>
                 </div>}
-                {appState === 'login-to-a-game' && <div>
+                {appState === 'login-to-a-game' && <div style={{maxWidth: 600}}>
                     <div style={{fontSize: '1.5rem'}}>
                         Slide into the room you wanna be in, fam!
                     </div>
-                    <div style={{fontSize:'0.9rem',fontStyle:'italic',marginTop:'1rem'}}>Yo, drop your name and hit that room tag. Check with your buddy for the room they've got going on their end. Keep in mind, it's a peer-to-peer game, so expect some iffy connections. Anyhow, let the best player take the dub!</div>
+                    <div style={{fontSize: '0.9rem', fontStyle: 'italic', marginTop: '1rem'}}>Yo, drop your name and hit
+                        that room tag. Check with your buddy for the room they've got going on their end. Keep in mind,
+                        it's a peer-to-peer game, so expect some iffy connections. Anyhow, let the best player take the
+                        dub!
+                    </div>
                 </div>}
                 <input style={{textAlign: 'center',marginTop:'2rem'}} autoFocus={true} onChange={(event) => {
                     setPlayerName(event.target.value.toUpperCase());
@@ -217,14 +227,21 @@ export function App() {
         {(appState === 'waiting-for-opponent' || appState === 'waiting-server-to-accept') && <div style={{
             display: 'flex',
             flexDirection: 'column',
-            gap: '2rem',
             height: '100%',
-            justifyContent: 'center',
-            padding:'2rem 2rem',
+            alignItems: 'center',
+            justifyContent: 'center'
         }}>
-            <motion.div style={{fontSize: '2rem'}} initial={{opacity: 0}} animate={{opacity: 1}}
-                        transition={{
-                            duration: 0.5, // Duration of each blink cycle
+            <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '2rem',
+                maxWidth: 600,
+                justifyContent: 'center',
+                padding: '2rem 2rem',
+            }}>
+                <motion.div style={{fontSize: '2rem'}} initial={{opacity: 0}} animate={{opacity: 1}}
+                            transition={{
+                                duration: 0.5, // Duration of each blink cycle
                             repeat: Infinity, // Repeat the animation indefinitely
                             repeatType: "reverse", // Reverse the animation after each cycle
                         }}>{appState === 'waiting-for-opponent' ? `Waiting for your opponent` : `Waiting for connection`}
@@ -242,7 +259,7 @@ export function App() {
                     if(appState === 'waiting-for-opponent'){
                         setAppState('create-a-game')
                     }
-                    if(appState === 'waiting-server-to-accept'){
+                    if (appState === 'waiting-server-to-accept') {
                         setAppState('login-to-a-game')
                     }
                 }}>
@@ -250,9 +267,10 @@ export function App() {
                     <IoArrowBack fontSize={'2rem'}/>
                 </motion.div>
             </div>
+            </div>
         </div>}
         {appState === 'game-is-ready' &&
-            <PlayGame playerName={playerName} opponentName={opponentName}/>
+            <PlayGame playerName={playerName} opponentName={opponentName} isHost={isHost}/>
         }
     </div>
 }

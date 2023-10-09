@@ -12,7 +12,7 @@ export const sizes = {
 }
 const SPEED_DOWN = 650;
 
-export default function PlayGame(props: { playerName: string, opponentName: string }) {
+export default function PlayGame(props: { playerName: string, opponentName: string,isHost:boolean }) {
     const [ready, setReady] = useState(false);
 
     useEffect(() => {
@@ -24,8 +24,10 @@ export default function PlayGame(props: { playerName: string, opponentName: stri
             heavyAttack: document.getElementById('heavyAttack')! as HTMLButtonElement,
             lightAttack: document.getElementById('lightAttack')! as HTMLButtonElement
         }
+
         GameScene.names.playerName = props.playerName;
         GameScene.names.opponentName = props.opponentName;
+        GameScene.isHost = props.isHost;
         const game = new Phaser.Game({
             type: Phaser.AUTO,
             parent: 'game',

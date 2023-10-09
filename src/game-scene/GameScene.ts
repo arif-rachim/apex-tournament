@@ -21,6 +21,7 @@ export class GameScene extends Phaser.Scene {
         lightAttack: HTMLButtonElement
     }
     public static connection:DataConnection;
+    public static isHost:boolean;
     public static names:{
         playerName:string,
         opponentName:string
@@ -41,8 +42,20 @@ export class GameScene extends Phaser.Scene {
             return {groundLayer,map};
         }
         const {groundLayer,map} = addMap();
-
-        const knight = createKnight(GameScene.names.playerName,this, 250, 250, {
+        const isHost = GameScene.isHost;
+        const location = {
+            playerOne:{
+                x:150,
+                y:250,
+                isFlip : false
+            },
+            playerTwo:{
+                x:850,
+                y:250,
+                isFlip:true
+            }
+        }
+        const knight = createKnight(GameScene.names.playerName,this, isHost? location.playerOne:location.playerTwo,{
             right: Phaser.Input.Keyboard.KeyCodes.D,
             left: Phaser.Input.Keyboard.KeyCodes.A,
             up: Phaser.Input.Keyboard.KeyCodes.W,
@@ -53,7 +66,7 @@ export class GameScene extends Phaser.Scene {
             GameScene.connection.send(event);
         });
 
-        const enemy = createKnight(GameScene.names.opponentName, this, 250, 250, {
+        const enemy = createKnight(GameScene.names.opponentName, this, isHost? location.playerTwo:location.playerOne,{
             right: Phaser.Input.Keyboard.KeyCodes.RIGHT,
             left: Phaser.Input.Keyboard.KeyCodes.LEFT,
             up: Phaser.Input.Keyboard.KeyCodes.UP,
