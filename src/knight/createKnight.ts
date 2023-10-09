@@ -22,7 +22,6 @@ function invoke(callback: () => void) {
         callback()
     }
 }
-
 export function createKnight(name: string, scene: Phaser.Scene, x: number, y: number,
                              keys: { right: number, left: number, up: number, down: number, lightAttack: number, heavyAttack: number },
                              buttons?: { right: HTMLButtonElement, left: HTMLButtonElement, up: HTMLButtonElement, down: HTMLButtonElement, lightAttack: HTMLButtonElement, heavyAttack: HTMLButtonElement },
@@ -43,6 +42,40 @@ export function createKnight(name: string, scene: Phaser.Scene, x: number, y: nu
     const down = scene.input.keyboard?.addKey(downKey)!;
     const heavyAttack = scene.input.keyboard?.addKey(heavyAttackKey)!;
     const lightAttack = scene.input.keyboard?.addKey(lightAttackKey)!;
+
+    if(messageToOpponent){
+        right.on('down',() => {
+            messageToOpponent({type: 'right-is-down', value: true});
+        })
+        right.on('up',() => {
+            messageToOpponent({type: 'right-is-down', value: false});
+        })
+        left.on('down',() => {
+            messageToOpponent({type: 'left-is-down', value: true});
+        })
+        left.on('up',() => {
+            messageToOpponent({type: 'left-is-down', value: false});
+        })
+        up.on('down',() => {
+            messageToOpponent({type: 'did-press-jump', value: true})
+            messageToOpponent({type: 'up-is-down', value: true});
+        })
+        up.on('up',() => {
+            messageToOpponent({type: 'up-is-down', value: false});
+        })
+        down.on('down',() => {
+            messageToOpponent({type: 'down-is-down', value: true});
+        })
+        down.on('up',() => {
+            messageToOpponent({type: 'down-is-down', value: false});
+        })
+        heavyAttack.on('down',() => {
+            messageToOpponent({type: 'did-press-heavy-attack', value: true})
+        })
+        lightAttack.on('down',() => {
+            messageToOpponent({type: 'did-press-light-attack', value: true})
+        })
+    }
 
     if (buttons && messageToOpponent) {
         buttons.right.addEventListener('touchstart', invoke(() => {
@@ -70,7 +103,6 @@ export function createKnight(name: string, scene: Phaser.Scene, x: number, y: nu
         buttons.up.addEventListener('touchend', invoke(() => {
             messageToOpponent({type: 'up-is-down', value: false})
             up.isDown = false
-
         }));
         buttons.down.addEventListener('touchstart', invoke(() => {
             messageToOpponent({type: 'down-is-down', value: true})
