@@ -10,7 +10,7 @@ export const sizes = {
     width: 960,
     height: 640
 }
-const SPEED_DOWN = 650;
+const SPEED_DOWN = 750;
 
 export default function PlayGame(props: { playerName: string, opponentName: string,isHost:boolean }) {
     const [ready, setReady] = useState(false);

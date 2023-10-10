@@ -26,13 +26,17 @@
                 "y": 340.9499358151477
             }
         },
+        "public/tiles/tile-map/level-1.json#Tileset": {
+            "scaleInEditor": 1
+        },
         "public/tiles/tile-map/level-1.json#dirt-grass": {
             "scaleInDock": 1
         }
     },
-    "last.exportedFilePath": "/Users/arifrachim/WebstormProjects/apex-tournament/tiles/tile-map",
-    "last.imagePath": "/Users/arifrachim/WebstormProjects/apex-tournament/tiles/grass-dirt",
+    "last.exportedFilePath": "/Users/arifrachim/WebstormProjects/apex-tournament/public/tiles/tile-map",
+    "last.imagePath": "/Users/arifrachim/WebstormProjects/apex-tournament/public/tiles/landscape",
     "map.lastUsedExportFilter": "JSON map files (*.tmj *.json)",
+    "map.lastUsedFormat": "json",
     "map.layerDataFormat": "1",
     "openFiles": [
         "public/tiles/tile-map/level-1.json"
@@ -41,5 +45,9 @@
     "recentFiles": [
         "public/tiles/tile-map/level-1.json"
     ],
-    "tileset.embedInMap": true
+    "tileset.embedInMap": true,
+    "tileset.tileSize": {
+        "height": 32,
+        "width": 32
+    }
 }

@@ -30,16 +30,36 @@ export class GameScene extends Phaser.Scene {
     preload() {
         staticPreLoad(this);
         this.load.tilemapTiledJSON('level-1', import.meta.env.BASE_URL + '/tiles/tile-map/level-1.json');
-        this.load.image('dirt-grass-sheet', import.meta.env.BASE_URL + '/tiles/grass-dirt/Tileset5.png');
+        this.load.image('bg1-sheet', import.meta.env.BASE_URL + '/tiles/landscape/BG1.png');
+        this.load.image('bg2-sheet', import.meta.env.BASE_URL + '/tiles/landscape/BG2.png');
+        this.load.image('bg3-sheet', import.meta.env.BASE_URL + '/tiles/landscape/BG3.png');
+        this.load.image('tiles-sheet', import.meta.env.BASE_URL + '/tiles/landscape/Tileset.png');
     }
 
     create() {
         const addMap = () => {
             const map = this.make.tilemap({key: 'level-1'})
-            const groundTiles = map.addTilesetImage('dirt-grass', 'dirt-grass-sheet')!;
-            const groundLayer = map.createLayer('Ground',groundTiles)!;
-            groundLayer.setCollision([1,23,2,24,3,25]);
-            return {groundLayer,map};
+            const bg1 = map.addTilesetImage('Background-One', 'bg1-sheet')!;
+            const bg2 = map.addTilesetImage('Background-Two', 'bg2-sheet')!;
+            const bg3 = map.addTilesetImage('Background-Three', 'bg3-sheet')!;
+            const tileset = map.addTilesetImage('Tileset', 'tiles-sheet')!;
+
+            map.createLayer('Background',bg1);
+            map.createLayer('BackgroundTwo',bg2);
+            map.createLayer('BackgroundThree',bg3);
+            const groundLayer = map.createLayer('Ground', tileset)!;
+            const foreground = map.createLayer('Foreground',tileset);
+            groundLayer.setCollision(Array.from({length:400}).map((_,index) => index+1))
+            // groundLayer.setCollision([1, 2, 3, 4,
+            //     22, 23, 24,
+            //     40, 41, 42,
+            //     55, 56, 57, 58,
+            //     73, 74, 75, 76, 77, 78, 79,
+            //     94, 95,
+            //     129, 130, 133, 134,
+            //     147, 151,
+            //     165, 169]);
+            return {groundLayer, map};
         }
         const {groundLayer,map} = addMap();
         const isHost = GameScene.isHost;
@@ -96,8 +116,10 @@ export class GameScene extends Phaser.Scene {
             }
 
         })
-
-        this.physics.add.collider(knight.sprite,groundLayer);
+        debugger;
+        this.physics.add.collider(knight.sprite,groundLayer,() => {
+            console.log('Colling !')
+        });
         this.physics.add.collider(enemy.sprite,groundLayer);
         this.physics.world.setBounds(0,0,map.widthInPixels,map.heightInPixels);
         this.physics.world.setBoundsCollision(true,true,true,true);
