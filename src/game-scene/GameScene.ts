@@ -48,7 +48,7 @@ export class GameScene extends Phaser.Scene {
             map.createLayer('BackgroundTwo',bg2);
             map.createLayer('BackgroundThree',bg3);
             const groundLayer = map.createLayer('Ground', tileset)!;
-            const foreground = map.createLayer('Foreground',tileset);
+            map.createLayer('Foreground',tileset);
             groundLayer.setCollision(Array.from({length:400}).map((_,index) => index+1))
             // groundLayer.setCollision([1, 2, 3, 4,
             //     22, 23, 24,
@@ -86,14 +86,7 @@ export class GameScene extends Phaser.Scene {
             GameScene.connection.send(event);
         });
 
-        const enemy = createKnight(GameScene.names.opponentName, this, isHost? location.playerTwo:location.playerOne,{
-            right: Phaser.Input.Keyboard.KeyCodes.RIGHT,
-            left: Phaser.Input.Keyboard.KeyCodes.LEFT,
-            up: Phaser.Input.Keyboard.KeyCodes.UP,
-            down: Phaser.Input.Keyboard.KeyCodes.DOWN,
-            lightAttack: Phaser.Input.Keyboard.KeyCodes.PERIOD,
-            heavyAttack: Phaser.Input.Keyboard.KeyCodes.COMMA
-        });
+        const enemy = createKnight(GameScene.names.opponentName, this, isHost? location.playerTwo:location.playerOne);
         //@ts-ignore
         GameScene.connection.on('data',(data:Message) => {
             if(data.type === 'right-is-down'){

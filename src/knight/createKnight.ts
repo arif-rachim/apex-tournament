@@ -24,19 +24,25 @@ function invoke(callback: () => void) {
 }
 
 export function createKnight(name: string, scene: Phaser.Scene,
-                             location:{x: number, y: number,isFlip:boolean},
-                             keys: { right: number, left: number, up: number, down: number, lightAttack: number, heavyAttack: number },
+                             location: { x: number, y: number, isFlip: boolean },
+                             keys?: { right: number, left: number, up: number, down: number, lightAttack: number, heavyAttack: number },
                              buttons?: { right: HTMLButtonElement, left: HTMLButtonElement, up: HTMLButtonElement, down: HTMLButtonElement, lightAttack: HTMLButtonElement, heavyAttack: HTMLButtonElement },
                              messageToOpponent?: (event: Message) => void
 ) {
     const {
         right: rightKey,
-        heavyAttack: heavyAttackKey,
-        lightAttack: lightAttackKey,
         up: upKey,
         left: leftKey,
-        down: downKey
-    } = keys;
+        down: downKey,
+        heavyAttack: heavyAttackKey,
+        lightAttack: lightAttackKey,
+    } = keys || {right:Phaser.Input.Keyboard.KeyCodes.RIGHT,
+        up:Phaser.Input.Keyboard.KeyCodes.UP,
+        left:Phaser.Input.Keyboard.KeyCodes.LEFT,
+        down:Phaser.Input.Keyboard.KeyCodes.DOWN,
+        heavyAttack:Phaser.Input.Keyboard.KeyCodes.PERIOD,
+        lightAttack:Phaser.Input.Keyboard.KeyCodes.COMMA
+    };
 
     const right = scene.input.keyboard?.addKey(rightKey)!;
     const left = scene.input.keyboard?.addKey(leftKey)!;
@@ -45,17 +51,17 @@ export function createKnight(name: string, scene: Phaser.Scene,
     const heavyAttack = scene.input.keyboard?.addKey(heavyAttackKey)!;
     const lightAttack = scene.input.keyboard?.addKey(lightAttackKey)!;
 
-    if(messageToOpponent){
-        right.on('down',() => {
+    if (messageToOpponent && left && right && up && down && heavyAttack && lightAttack) {
+        right.on('down', () => {
             messageToOpponent({type: 'right-is-down', value: true});
         })
-        right.on('up',() => {
+        right.on('up', () => {
             messageToOpponent({type: 'right-is-down', value: false});
         })
-        left.on('down',() => {
+        left.on('down', () => {
             messageToOpponent({type: 'left-is-down', value: true});
         })
-        left.on('up',() => {
+        left.on('up', () => {
             messageToOpponent({type: 'left-is-down', value: false});
         })
         up.on('down',() => {
@@ -79,7 +85,7 @@ export function createKnight(name: string, scene: Phaser.Scene,
         })
     }
 
-    if (buttons && messageToOpponent) {
+    if (buttons && messageToOpponent && right && left && up && down) {
         buttons.right.addEventListener('touchstart', invoke(() => {
             messageToOpponent({type: 'right-is-down', value: true});
             right.isDown = true
@@ -171,7 +177,7 @@ export function createKnight(name: string, scene: Phaser.Scene,
     }
     const movementStateMachine = getMovementStateMachine(sprite, state)
     const animationStateMachine = getAnimationStateMachine(name, play, playOnce, sprite, state, movementStateMachine)
-    const runState = getRunState(sprite, right, state, left, down)
+    const runState = getRunState(sprite, state, right, left, down)
 
     animationStateMachine.addListener('beforeStateChange', (from, to) => {
         log(name, 'movement change ', from, to)
