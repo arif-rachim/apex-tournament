@@ -1,8 +1,8 @@
 import {createStateMachine} from "../utils/createStateMachine";
-import {KnightState} from "./knightState";
+import {State} from "./State";
 import SpriteWithDynamicBody = Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
 
-export function getMovementStateMachine(sprite: SpriteWithDynamicBody, state: KnightState) {
+export function getMovementStateMachine(sprite: SpriteWithDynamicBody, state: State) {
     return createStateMachine('standing', {
         jump: {
             from: 'standing',

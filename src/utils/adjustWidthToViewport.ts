@@ -1,4 +1,4 @@
-import {sizes} from "../PlayGame";
+import {sizes} from "../Game";
 
 export function adjustDivToViewport() {
     const div = document.getElementById('game');

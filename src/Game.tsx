@@ -1,6 +1,6 @@
 import {useEffect, useState} from "react";
 import Phaser from "phaser";
-import {GameScene} from "./game-scene/GameScene";
+import {Scene} from "./scenes/Scene";
 import {RightButtons} from "./buttons/RightButtons";
 import {LeftButtons} from "./buttons/LeftButtons";
 import {motion} from "framer-motion";
@@ -12,11 +12,11 @@ export const sizes = {
 }
 const SPEED_DOWN = 1000;
 
-export default function PlayGame(props: { playerName: string, opponentName: string,isHost:boolean }) {
+export default function Game(props: { playerName: string, opponentName: string,isHost:boolean}) {
     const [ready, setReady] = useState(false);
-
+    const [winner,setWinner] = useState('');
     useEffect(() => {
-        GameScene.buttons = {
+        Scene.buttons = {
             right: document.getElementById('right')! as HTMLButtonElement,
             left: document.getElementById('left')! as HTMLButtonElement,
             down: document.getElementById('down')! as HTMLButtonElement,
@@ -25,9 +25,9 @@ export default function PlayGame(props: { playerName: string, opponentName: stri
             lightAttack: document.getElementById('lightAttack')! as HTMLButtonElement
         }
 
-        GameScene.names.playerName = props.playerName;
-        GameScene.names.opponentName = props.opponentName;
-        GameScene.isHost = props.isHost;
+        Scene.names.playerName = props.playerName;
+        Scene.names.opponentName = props.opponentName;
+        Scene.isHost = props.isHost;
         const game = new Phaser.Game({
             type: Phaser.AUTO,
             parent: 'game',
@@ -49,7 +49,8 @@ export default function PlayGame(props: { playerName: string, opponentName: stri
                     debugShowBody: false
                 }
             },
-            scene: [GameScene]
+            scene: [Scene],
+
         });
         game.events.on('ready', () => {
             adjustDivToViewport();
@@ -79,6 +80,39 @@ export default function PlayGame(props: { playerName: string, opponentName: stri
         </motion.div>
         <RightButtons/>
         <LeftButtons/>
+        <Scores host={props.isHost ? props.playerName : props.opponentName} guest={props.isHost ? props.opponentName:props.playerName} onWinner={(winner:string) => {
+            setWinner(winner);
+        }}/>
+        {winner &&
+            <motion.div style={{position:'absolute',top:'10vh',textAlign:'center',width:'100%',fontSize:'3rem',color:'white'}} initial={{scale:0}} animate={{scale:1}}>{winner} Win !</motion.div>
+        }
     </div>
 }
 
+function Scores(props:{host:string,guest:string,onWinner:(name:string) => void}){
+    const [{guest,host},setState] = useState<{host:number,guest:number}>({host:0,guest:0})
+    useEffect(() => {
+        //window.dispatchEvent(new CustomEvent('score-update',{detail:data.score}))
+        function onScoreUpdate(event:CustomEvent){
+            setState(event.detail as any)
+        }
+        window.addEventListener('score-update',onScoreUpdate);
+        return () => {
+            window.removeEventListener('score-update',onScoreUpdate);
+        }
+    },[])
+    useEffect(() => {
+        if(guest === 10000){
+            props.onWinner(props.guest);
+        }
+        if(host === 10000){
+            props.onWinner(props.host);
+        }
+        //@ts-ignore
+    },[guest,host])
+    return <div style={{top:0,left:0,textAlign:'center',position:'absolute',width:'100%',display:'flex',flexDirection:'row',padding:'2rem'}}>
+        <div>{props.host} : {host}</div>
+        <div style={{flexGrow:1}}></div>
+        <div>{props.guest} : {guest}</div>
+    </div>
+}

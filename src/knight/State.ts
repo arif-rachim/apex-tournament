@@ -1,6 +1,6 @@
 
 
-export type KnightState = {
+export type State = {
     canDoubleJump: boolean,
     isJumping: boolean,
     didPressJump: boolean,
@@ -11,6 +11,10 @@ export type KnightState = {
     attackOnProgress: boolean // this is the flag when the heavy attack is going on,
     toGetAttack: boolean,
     healthPoint: number,
-    currentPosition: { x: number, y: number }
+    currentPosition: { x: number, y: number },
+    score: {
+        host: number,
+        guest: number
+    }
 
 }

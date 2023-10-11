@@ -4,7 +4,7 @@ import {getAnimationStateMachine} from "./getAnimationStateMachine";
 import {getMovementStateMachine} from "./getMovementStateMachine";
 import {getRunState} from "./getRunState";
 import {movement} from "./movement";
-import {KnightState} from "./knightState";
+import {State} from "./State";
 import {Message} from "../communication-message/Message";
 import {createLogger} from "../utils/createLogger";
 import SpriteWithDynamicBody = Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
@@ -23,11 +23,14 @@ function invoke(callback: () => void) {
     }
 }
 
-export function createKnight(name: string, scene: Phaser.Scene,
-                             location: { x: number, y: number, isFlip: boolean },
-                             keys?: { right: number, left: number, up: number, down: number, lightAttack: number, heavyAttack: number },
-                             buttons?: { right: HTMLButtonElement, left: HTMLButtonElement, up: HTMLButtonElement, down: HTMLButtonElement, lightAttack: HTMLButtonElement, heavyAttack: HTMLButtonElement },
-                             messageToOpponent?: (event: Message) => void
+export function Knight(name: string,
+                       isHero : boolean,
+                       scene: Phaser.Scene,
+                       isHost : boolean,
+                       location: { x: number, y: number, isFlip: boolean },
+                       messageToOpponent: (event: Message) => void,
+                       keys?: { right: number, left: number, up: number, down: number, lightAttack: number, heavyAttack: number },
+                       buttons?: { right: HTMLButtonElement, left: HTMLButtonElement, up: HTMLButtonElement, down: HTMLButtonElement, lightAttack: HTMLButtonElement, heavyAttack: HTMLButtonElement }
 ) {
     const {
         right: rightKey,
@@ -162,7 +165,7 @@ export function createKnight(name: string, scene: Phaser.Scene,
     if(location.isFlip){
         sprite.setFlipX(location.isFlip)
     }
-    const state: KnightState = {
+    const state: State = {
         canDoubleJump: false,
         flipX: location.isFlip,
         didPressJump: false,
@@ -173,10 +176,25 @@ export function createKnight(name: string, scene: Phaser.Scene,
         toGetAttack: false,
         healthPoint: 1000,
         attackOnProgress: false,
-        currentPosition : {x:0,y:0}
+        currentPosition : {x:0,y:0},
+        score: {
+            host : 0,
+            guest : 0
+        }
     }
     const movementStateMachine = getMovementStateMachine(sprite, state)
-    const animationStateMachine = getAnimationStateMachine(name, play, playOnce, sprite, state, movementStateMachine)
+    function onGetAttacked(){
+        if(isHost){
+            state.score.guest += 100
+        }else{
+            state.score.host += 100
+        }
+        if(messageToOpponent){
+            messageToOpponent({type:'attacked',score:state.score});
+            window.dispatchEvent(new CustomEvent('score-update', {detail: state.score}))
+        }
+    }
+    const animationStateMachine = getAnimationStateMachine(name, play, playOnce, sprite, state, movementStateMachine,onGetAttacked)
     const runState = getRunState(sprite, state, right, left, down)
 
     animationStateMachine.addListener('beforeStateChange', (from, to) => {
@@ -213,7 +231,7 @@ export function createKnight(name: string, scene: Phaser.Scene,
                 break;
             }
         }
-        if (messageToOpponent && positionMoved()) {
+        if (messageToOpponent && isHero && positionMoved()) {
             state.currentPosition.x = sprite.body.x;
             state.currentPosition.y = sprite.body.y;
             messageToOpponent({type: 'character-position', ...state.currentPosition})
@@ -254,7 +272,7 @@ export function createKnight(name: string, scene: Phaser.Scene,
 
     play('Run');
 
-    function addEnemies(enemies: { sprite: Sprite }[]) {
+    function addEnemies(enemies: { sprite: Sprite,state:State }[]) {
         enemies.forEach(enemy => {
             //@ts-ignore
             enemy.sprite.on('attack', ({rectangle, type}: { rectangle: any, type: 'light' | 'heavy' }) => {

@@ -1,18 +1,20 @@
 import {createStateMachine, StateMachine} from "../utils/createStateMachine";
-import {MovementKey} from "./createKnight";
-import {KnightState} from "./knightState"
+import {MovementKey} from "./Knight";
+import {State} from "./State"
 import {createLogger} from "../utils/createLogger";
 import SpriteWithDynamicBody = Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
 import StaticGroup = Phaser.Physics.Arcade.StaticGroup;
 
 const log = createLogger('getAnimationStateMachine.tsx');
-function performAttack(isHeavyAttack: boolean, sprite: Phaser.Physics.Arcade.Sprite & { body: Phaser.Physics.Arcade.Body }, state: KnightState, playOnce: (key: MovementKey, update: (animation: any, frame: any, currentFrame: any, totalFrame: any) => void) => Promise<void>) {
+
+function performAttack(isHeavyAttack: boolean, sprite: Phaser.Physics.Arcade.Sprite & { body: Phaser.Physics.Arcade.Body }, state: State, playOnce: (key: MovementKey, update: (animation: any, frame: any, currentFrame: any, totalFrame: any) => void) => Promise<void>) {
     const maxX = sprite.body.maxVelocity.x;
     const attackWidth = 50;
 
     let group: StaticGroup | undefined = undefined;
-    let timeoutId:any;
-    function cancel(){
+    let timeoutId: any;
+
+    function cancel() {
         clearTimeout(timeoutId);
         sprite.setMaxVelocity(maxX);
         state.attackOnProgress = false;
@@ -49,12 +51,13 @@ function performAttack(isHeavyAttack: boolean, sprite: Phaser.Physics.Arcade.Spr
     state.attackOnProgress = true;
 }
 
-export function getAnimationStateMachine(name:string,play: (key: MovementKey) => void,
-                                            playOnce: (key: MovementKey, update?: (animation: any, frame: any, currentFrame: any, totalFrame: any) => void) => Promise<void>,
-                                            sprite: SpriteWithDynamicBody,
-                                            state: KnightState,
-                                            movementStateMachine: StateMachine<any>) {
-    log('starting animation state machine',name);
+export function getAnimationStateMachine(name: string,
+                                         play: (key: MovementKey) => void,
+                                         playOnce: (key: MovementKey, update?: (animation: any, frame: any, currentFrame: any, totalFrame: any) => void) => Promise<void>,
+                                         sprite: SpriteWithDynamicBody,
+                                         state: State,
+                                         movementStateMachine: StateMachine<any>,onGetAttack:() => void) {
+    log('starting animation state machine', name);
     return createStateMachine('idle', {
         idle: {
             from: ['falling', 'running', 'pivoting', 'crouching', 'crouch-walking', 'flipping', 'light-attacking',
@@ -138,8 +141,9 @@ export function getAnimationStateMachine(name:string,play: (key: MovementKey) =>
             state.attackOnProgress = false;
             playOnce('Hit').then(() => {
                 state.toGetAttack = false;
-            })
+            });
 
+            onGetAttack();
         }
     }, {
 

@@ -1,8 +1,8 @@
 import {createStateMachine} from "../utils/createStateMachine";
-import {KnightState} from "./knightState";
+import {State} from "./State";
 import SpriteWithDynamicBody = Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
 
-export function getRunState(sprite: SpriteWithDynamicBody,state: KnightState, right: {isDown:boolean},  left: {isDown:boolean}, down: {isDown:boolean}) {
+export function getRunState(sprite: SpriteWithDynamicBody, state: State, right: {isDown:boolean}, left: {isDown:boolean}, down: {isDown:boolean}) {
     return createStateMachine('idle', {
         idle: {
             from: ['running-right', 'running-left', 'crouching', 'crouch-walking-right', 'crouch-walking-left'],

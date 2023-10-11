@@ -1,27 +1,28 @@
-import PlayGame from "./PlayGame";
+import Game from "./Game";
 import {useEffect, useRef, useState} from "react";
 import {IoArrowBack, IoLogIn} from "react-icons/io5";
 import {IoIosCreate} from "react-icons/io";
 import {motion} from "framer-motion";
 import Peer, {DataConnection} from "peerjs";
 import {createLogger} from "./utils/createLogger";
-import {GameScene} from "./game-scene/GameScene";
+import {Scene} from "./scenes/Scene";
 
 const appUUID = "ecd5660b-032e-4e54-95a1-c5ba7250ea17-apex-tournament";
 const log = createLogger('App.tsx');
 
 export function App() {
-    const [appState, setAppState] = useState<'start' | 'create-a-game' | 'waiting-for-opponent' | 'login-to-a-game' | 'waiting-server-to-accept' | 'game-is-ready' | 'unable-to-login'>('start');
+    const [appState, setAppState] = useState<'start' | 'create-a-game' | 'waiting-for-opponent' | 'login-to-a-game' | 'waiting-server-to-accept' | 'game-is-ready' | 'unable-to-login' | 'player-win'>('start');
     const [roomName, setRoomName] = useState('');
     const [isHost,setIsHost] = useState(false);
     const [playerName, setPlayerName] = useState('');
     const [opponentName, setPlayerOpponent] = useState('');
+    const [winner,setWinner] = useState('');
     const roomKey = appUUID + '-' + roomName.split(' ').filter(i => i).join('-').toUpperCase();
     const peerRef = useRef<Peer | undefined>(undefined);
     const connectionRef = useRef<DataConnection|undefined>(undefined);
     useEffect(() => {
         if(opponentName){
-            GameScene.connection = connectionRef.current!;
+            Scene.connection = connectionRef.current!;
             setAppState('game-is-ready');
         }
         return () => {
@@ -270,7 +271,25 @@ export function App() {
             </div>
         </div>}
         {appState === 'game-is-ready' &&
-            <PlayGame playerName={playerName} opponentName={opponentName} isHost={isHost}/>
+            <div style={{display:'flex',flexDirection:'column',position:'relative',height:'100%'}}>
+                <Game playerName={playerName} opponentName={opponentName} isHost={isHost} onWinner={(winner:string) => {
+                    setWinner(winner);
+                    setAppState('player-win')
+                }}/>
+            </div>
+        }
+        {appState === 'player-win' &&
+            <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                height: '100%',
+                alignItems: 'center',
+                justifyContent: 'center'
+            }}>
+                <div>
+                    {winner === playerName ? 'You win !' : 'You loose !'}
+                </div>
+            </div>
         }
     </div>
 }
