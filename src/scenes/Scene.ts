@@ -70,7 +70,7 @@ export class Scene extends Phaser.Scene {
         function messageToOpponent(event:Message){
             Scene.connection.send(event);
         }
-        const knight = new Knight(Scene.names.playerName,true, this, isHost, isHost ? location.playerOne : location.playerTwo, messageToOpponent,{
+        const knight = Knight(Scene.names.playerName,true, this, isHost, isHost ? location.playerOne : location.playerTwo, messageToOpponent,{
             right: Phaser.Input.Keyboard.KeyCodes.D,
             left: Phaser.Input.Keyboard.KeyCodes.A,
             up: Phaser.Input.Keyboard.KeyCodes.W,
@@ -79,7 +79,9 @@ export class Scene extends Phaser.Scene {
             heavyAttack: Phaser.Input.Keyboard.KeyCodes.P
         }, Scene.buttons);
 
-        const enemy = new Knight(Scene.names.opponentName,false, this, !isHost, isHost ? location.playerTwo : location.playerOne,messageToOpponent);
+        //@ts-ignore
+        const enemy = Knight(Scene.names.opponentName,false, this, !isHost, isHost ? location.playerTwo : location.playerOne,messageToOpponent);
+
         //@ts-ignore
         Scene.connection.on('data', (data: Message) => {
             if (data.type === 'right-is-down') {

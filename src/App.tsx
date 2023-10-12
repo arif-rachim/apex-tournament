@@ -11,12 +11,12 @@ const appUUID = "ecd5660b-032e-4e54-95a1-c5ba7250ea17-apex-tournament";
 const log = createLogger('App.tsx');
 
 export function App() {
-    const [appState, setAppState] = useState<'start' | 'create-a-game' | 'waiting-for-opponent' | 'login-to-a-game' | 'waiting-server-to-accept' | 'game-is-ready' | 'unable-to-login' | 'player-win'>('start');
+    const [appState, setAppState] = useState<'start' | 'create-a-game' | 'waiting-for-opponent' | 'login-to-a-game' | 'waiting-server-to-accept' | 'game-is-ready' | 'unable-to-login'>('start');
     const [roomName, setRoomName] = useState('');
     const [isHost,setIsHost] = useState(false);
     const [playerName, setPlayerName] = useState('');
     const [opponentName, setPlayerOpponent] = useState('');
-    const [winner,setWinner] = useState('');
+
     const roomKey = appUUID + '-' + roomName.split(' ').filter(i => i).join('-').toUpperCase();
     const peerRef = useRef<Peer | undefined>(undefined);
     const connectionRef = useRef<DataConnection|undefined>(undefined);
@@ -272,24 +272,9 @@ export function App() {
         </div>}
         {appState === 'game-is-ready' &&
             <div style={{display:'flex',flexDirection:'column',position:'relative',height:'100%'}}>
-                <Game playerName={playerName} opponentName={opponentName} isHost={isHost} onWinner={(winner:string) => {
-                    setWinner(winner);
-                    setAppState('player-win')
-                }}/>
+                <Game playerName={playerName} opponentName={opponentName} isHost={isHost} />
             </div>
         }
-        {appState === 'player-win' &&
-            <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                height: '100%',
-                alignItems: 'center',
-                justifyContent: 'center'
-            }}>
-                <div>
-                    {winner === playerName ? 'You win !' : 'You loose !'}
-                </div>
-            </div>
-        }
+
     </div>
 }

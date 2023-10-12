@@ -96,8 +96,10 @@ function Scores(props:{host:string,guest:string,onWinner:(name:string) => void})
         function onScoreUpdate(event:CustomEvent){
             setState(event.detail as any)
         }
+        //@ts-ignore
         window.addEventListener('score-update',onScoreUpdate);
         return () => {
+            //@ts-ignore
             window.removeEventListener('score-update',onScoreUpdate);
         }
     },[])
